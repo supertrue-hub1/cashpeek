@@ -1,0 +1,16 @@
+[0;1;32m●[0m nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (]8;;file://6813645-hk554639.twc1.net/usr/lib/systemd/system/nginx.service/usr/lib/systemd/system/nginx.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Sat 2026-03-14 06:08:17 UTC; 6h ago
+       Docs: ]8;;man:nginx(8)man:nginx(8)]8;;
+    Process: 727 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 760 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+   Main PID: 771 (nginx)
+      Tasks: 2 (limit: 2315)
+     Memory: 3.5M (peak: 4.1M)
+        CPU: 2.352s
+     CGroup: /system.slice/nginx.service
+             ├─[0;38;5;245m771 "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;"[0m
+             └─[0;38;5;245m772 "nginx: worker process"[0m
+
+Mar 14 06:08:16 6813645-hk554639.twc1.net systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Mar 14 06:08:17 6813645-hk554639.twc1.net systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.

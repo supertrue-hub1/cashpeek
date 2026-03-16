@@ -1,0 +1,885 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User Management (Auth.js compatible)
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?   // Hashed password for credentials provider
+  image         String?
+  role          String    @default("user") // admin, editor, user
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth.js relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Business relations
+  favorites     FavoriteOffer[]
+  searchHistory SearchHistory[]
+  auditLogs     AuditLog[]
+  
+  // Smart Debt relations
+  debts             Debt[]
+  brokerSessions    DebtBrokerSession[]
+  creditHealthHistory CreditHealthHistory[]
+}
+
+// Auth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// User Cabinet Features
+// ============================================
+
+model FavoriteOffer {
+  id              String   @id @default(cuid())
+  userId          String
+  offerId         String   // ID из LoanOffer или external ID
+  offerExternalId String?  // Для офферов из внешних API
+  
+  // Метаданные
+  note            String?  // Заметка пользователя
+  notifyOnExpiry  Boolean  @default(false) // Уведомлять об истечении срока
+  notifyOnBetterRate Boolean @default(false) // Уведомлять о лучшей ставке
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, offerId]) // Один оффер - одна запись на пользователя
+  @@index([userId])
+  @@index([offerId])
+  @@index([createdAt])
+}
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  
+  // Параметры поиска
+  query       String?  // Поисковый запрос
+  city        String?  // Город
+  amount      Int?     // Сумма
+  term        Int?     // Срок в днях
+  filters     String?  // JSON с дополнительными фильтрами
+  
+  // Результаты
+  resultsCount Int?    // Количество найденных офферов
+  
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Guest Data Migration Log
+// ============================================
+
+model GuestMigration {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  guestId       String   // UUID из localStorage
+  
+  // Что было мигрировано
+  favoritesCount Int    @default(0)
+  historyCount   Int    @default(0)
+  
+  migratedAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([guestId])
+}
+
+// ============================================
+// Smart Debt - AI Debt Management
+// ============================================
+
+model Debt {
+  id              String   @id @default(cuid())
+  userId          String
+  
+  // Основная информация
+  name            String   // Название кредита/займа
+  creditor        String?  // Кредитор (банк, МФО)
+  amount          Float    // Сумма долга
+  interestRate    Float    // Процентная ставка (годовых)
+  monthlyPayment  Float?   // Ежемесячный платёж
+  remainingAmount Float?   // Остаток долга
+  totalAmount     Float?   // Общая сумма с процентами
+  
+  // Даты
+  startDate       DateTime? // Дата открытия
+  dueDate         DateTime? // Дата платежа
+  endDate         DateTime? // Дата полного погашения
+  
+  // Классификация
+  type            String   @default("personal") // mfo, bank, credit_card, personal
+  status          String   @default("active")   // active, overdue, paid, closed
+  
+  // Дополнительные данные
+  currency        String   @default("RUB")
+  notes           String?  // Заметки пользователя
+  
+  // AI-анализ (кэшированные результаты)
+  riskScore       Float?   // Оценка риска (0-100)
+  riskLevel       String?  // low, medium, high, critical
+  aiRecommendations String? // JSON с рекомендациями AI
+  lastAiAnalysis  DateTime? // Последний AI-анализ
+  
+  // Метаданные
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([dueDate])
+}
+
+// AI-сессии для чата с брокером
+model DebtBrokerSession {
+  id              String   @id @default(cuid())
+  userId          String
+  debtId          String?  // Опциональная привязка к конкретному долгу
+  
+  // Контекст сессии
+  context         String?  // JSON с контекстом разговора
+  messages        String?  // JSON с историей сообщений
+  
+  // Метаданные
+  title           String?  // Название сессии
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isActive])
+}
+
+// История кредитного здоровья
+model CreditHealthHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  
+  // Общий скоринг
+  score           Int      // 300-850
+  level           String   // poor, fair, good, excellent
+  
+  // Детальные показатели (JSON)
+  metrics         String   // JSON: { paymentDiscipline: 85, debtLoad: 60, ... }
+  
+  // Рекомендации AI
+  recommendations String?  // JSON массив рекомендаций
+  
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Loan Offers (Core Business)
+// ============================================
+
+model LoanOffer {
+  id        String   @id @default(cuid())
+  externalId String? // ID from external API (Leads.su, etc.)
+  
+  // Basic Info
+  name        String
+  slug        String   @unique
+  logo        String?
+  rating      Float    @default(4.5)
+  
+  // Loan Terms (from API - read only after sync)
+  minAmount   Int      @default(1000)
+  maxAmount   Int      @default(30000)
+  minTerm     Int      @default(7)
+  maxTerm     Int      @default(30)
+  baseRate    Float    @default(0.8)
+  firstLoanRate Float?
+  decisionTime Int     @default(5) // minutes, 0 = instant
+  approvalRate Int     @default(90)
+  
+  // Features (JSON array)
+  features    String?  // JSON: ["first_loan_zero", "prolongation", ...]
+  payoutMethods String? // JSON: ["card", "yoomoney", ...]
+  
+  // Requirements
+  badCreditOk  Boolean @default(true)
+  noCalls      Boolean @default(true)
+  roundTheClock Boolean @default(false)
+  minAge       Int     @default(18)
+  documents    String? // JSON: ["passport", "inn", ...]
+  
+  // Partner Settings
+  affiliateUrl String?
+  affiliateId  String?
+  
+  // SEO Fields (editable by editors)
+  metaTitle       String?
+  metaDescription String?
+  customDescription String? // Custom description for SEO
+  
+  // Status & Visibility
+  status         String   @default("draft") // draft, published, archived
+  isFeatured     Boolean  @default(false)
+  isNew          Boolean  @default(false)
+  isPopular      Boolean  @default(false)
+  showOnHomepage Boolean  @default(true)
+  sortOrder      Int      @default(10)
+  
+  // Sync Status
+  syncSource     String?  // "Leads.su", "Admitad", etc.
+  lastSyncAt     DateTime?
+  syncStatus     String   @default("pending") // synced, pending, error
+  requiresReview Boolean  @default(false) // Anomaly detection flag
+  reviewReason   String?  // Reason for review flag
+  
+  // Analytics (cached)
+  viewsCount     Int      @default(0)
+  clicksCount    Int      @default(0)
+  conversionsCount Int    @default(0)
+  
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  publishedAt    DateTime?
+  
+  // Relations
+  auditLogs   AuditLog[]
+  tags        OfferTag[]
+  syncHistory SyncLog[]
+}
+
+// ============================================
+// Tags for Offers
+// ============================================
+
+model Tag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  color       String?  // hex color
+  createdAt   DateTime @default(now())
+  
+  offers      OfferTag[]
+}
+
+model OfferTag {
+  offerId String
+  tagId   String
+  
+  offer   LoanOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  tag     Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([offerId, tagId])
+}
+
+// ============================================
+// Audit Log (Operational Excellence)
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  
+  // Who made the change
+  userId      String?
+  userEmail   String?  // Denormalized for quick access
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  // What changed
+  offerId     String
+  offer       LoanOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  // Change details
+  action      String   // CREATE, UPDATE, DELETE, SYNC, BULK_UPDATE
+  fieldName   String?  // Which field was changed
+  oldValue    String?  // JSON or string representation
+  newValue    String?  // JSON or string representation
+  
+  // Context
+  source      String   @default("admin") // admin, api_sync, bulk_action
+  ipAddress   String?
+  userAgent   String?
+  
+  // Metadata
+  metadata    String?  // JSON for additional info
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([offerId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================
+// Sync Logs (API Integration)
+// ============================================
+
+model SyncLog {
+  id              String   @id @default(cuid())
+  
+  // Sync info
+  source          String   // "Leads.su", "Admitad", etc.
+  status          String   // success, partial, error
+  
+  // Statistics
+  offersProcessed Int      @default(0)
+  offersUpdated   Int      @default(0)
+  offersAdded     Int      @default(0)
+  offersUnchanged Int      @default(0)
+  errors          Int      @default(0)
+  
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?     // Duration in milliseconds
+  
+  // Details
+  errorMessage    String?
+  errorDetails    String?  // JSON with error details
+  
+  // Relations
+  offerId         String?
+  offer           LoanOffer? @relation(fields: [offerId], references: [id])
+  
+  @@index([source])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// ============================================
+// SEO Templates
+// ============================================
+
+model SeoTemplate {
+  id          String   @id @default(cuid())
+  name        String   // "Default Offer Description", "Meta Title", etc.
+  type        String   // "description", "meta_title", "meta_description"
+  template    String   // Template with placeholders like {{name}}, {{minAmount}}, etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// Settings (Site Configuration)
+// ============================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON string for complex values
+  category  String   @default("general") // general, seo, api, notifications, security, appearance
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+// ============================================
+// Blog System
+// ============================================
+
+model BlogCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  color       String?  // hex color for UI
+  icon        String?  // lucide icon name
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  posts       BlogPost[]
+  
+  @@index([slug])
+}
+
+model BlogAuthor {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  avatar      String?
+  bio         String?
+  role        String?  // "Финансовый эксперт", "Кредитный специалист"
+  socialLinks String? // JSON: { twitter, telegram, linkedin }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  posts       BlogPost[]
+  
+  @@index([slug])
+}
+
+model BlogPost {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  
+  // Content
+  excerpt       String?  // Short description for cards
+  content       String   // HTML or MDX content
+  featuredImage String?  // Main image URL
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String? // comma-separated
+  
+  // Relations
+  categoryId    String?
+  category      BlogCategory? @relation(fields: [categoryId], references: [id])
+  authorId      String?
+  author        BlogAuthor? @relation(fields: [authorId], references: [id])
+  
+  // Linked offers for sidebar CTA
+  linkedOfferIds String? // JSON array of offer IDs
+  
+  // Reading
+  readingTime   Int      @default(5) // minutes
+  
+  // Status
+  status        String   @default("draft") // draft, published, archived
+  isFeatured    Boolean  @default(false)
+  
+  // Analytics
+  viewsCount    Int      @default(0)
+  likesCount    Int      @default(0)
+  
+  // Timestamps
+  publishedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Tags relation
+  tags          BlogPostTag[]
+  
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([publishedAt])
+}
+
+model BlogTag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  
+  posts     BlogPostTag[]
+  
+  @@index([slug])
+}
+
+model BlogPostTag {
+  postId  String
+  tagId   String
+  
+  post    BlogPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag     BlogTag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([postId, tagId])
+}
+
+// ============================================
+// Programmatic SEO - Cities
+// ============================================
+
+model SeoCity {
+  id          String   @id @default(cuid())
+  name        String   // Город (кириллица)
+  slug        String   @unique // URL slug (латиница)
+  preposition String   // "в Москве", "в Санкт-Петербурге"
+  genitive    String   // "Москвы", "Санкт-Петербурга"
+  population  Int?     // Population
+  region      String?  // Region name
+  isActive    Boolean  @default(true)
+  priority    Int      @default(10) // Для приоритезации в generateStaticParams
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  seoPages    SeoPage[]
+  faqs        SeoFaq[]
+  
+  @@index([slug])
+  @@index([isActive])
+  @@index([priority])
+}
+
+// ============================================
+// Programmatic SEO - Loan Types
+// ============================================
+
+model SeoLoanType {
+  id          String   @id @default(cuid())
+  name        String   // Название (кириллица)
+  slug        String   @unique // URL slug
+  namePrepositional String // "на карту", "без отказа"
+  description String?  // Краткое описание
+  keywords    String?  // JSON array of keywords
+  h1          String?  // H1 заголовок
+  shortDesc   String?  // Короткое описание для карточек
+  sortOrder   Int      @default(10)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Маппинг на LOAN_CATEGORIES из кода
+  categorySlug String? // Ссылка на slug из LOAN_CATEGORIES
+  
+  // Relations
+  seoPages    SeoPage[]
+  faqs        SeoFaq[]
+  
+  @@index([slug])
+  @@index([isActive])
+  @@index([categorySlug])
+}
+
+// ============================================
+// Programmatic SEO - Pages
+// ============================================
+
+model SeoPage {
+  id              String   @id @default(cuid())
+  
+  // URL components
+  cityId          String?
+  city            SeoCity? @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  
+  loanTypeId      String?
+  loanType        SeoLoanType? @relation(fields: [loanTypeId], references: [id], onDelete: Cascade)
+  
+  // Optional: amount and term for granular pages
+  amount          Int?     // Sum in rubles (1000, 5000, etc.)
+  amountSlug      String?  // "1000", "5000", etc.
+  term            Int?     // Term in days (7, 14, 30, etc.)
+  termSlug        String?  // "7-dney", "30-dney", etc.
+  
+  // SEO content from JSON
+  pageTitle       String
+  pageDescription String?  @db.Text
+  h1              String?
+  
+  // URL path (generated)
+  urlPath         String   @unique // "/zaimy/na-kartu/v-moskva"
+  
+  // Indexing control
+  isIndexable     Boolean  @default(true)
+  canonicalUrl    String?  // Canonical URL если отличается
+  noIndex         Boolean  @default(false) // Полный noindex
+  
+  // Priority for crawl budget
+  priority        Int      @default(5) // 1-10, higher = more important
+  
+  // Content uniqueness (для Anti-Thin Content)
+  contentHash     String?  // Хэш контента для дедупликации
+  variationSeed   Int?     // Seed для псевдо-случайной статистики
+  
+  // Analytics
+  viewsCount      Int      @default(0)
+  
+  // Status
+  status          String   @default("published") // published, draft
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Indexes
+  @@index([cityId, loanTypeId])
+  @@index([urlPath])
+  @@index([isIndexable, noIndex])
+  @@index([priority])
+  @@index([status])
+  @@unique([cityId, loanTypeId, amount, term])
+}
+
+// ============================================
+// SEO FAQ Block
+// ============================================
+
+model SeoFaq {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String   @db.Text
+  loanTypeId  String?  // Optional: привязка к типу займа
+  loanType    SeoLoanType? @relation(fields: [loanTypeId], references: [id], onDelete: Cascade)
+  cityId      String?  // Optional: привязка к городу
+  city        SeoCity? @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  sortOrder   Int      @default(10)
+  isActive    Boolean  @default(true)
+  
+  @@index([loanTypeId])
+  @@index([cityId])
+}
+
+// ============================================
+// Programmatic SEO - Mass Pages (500K+)
+// ============================================
+
+model SeoCombination {
+  id              String   @id @default(cuid())
+  
+  // URL components (из CSV)
+  city            String   // Город кириллицей: "Москва"
+  citySlug        String   // URL slug: "moskva"
+  loanType        String   // Тип займа: "Займы онлайн"
+  loanTypeSlug    String   // URL slug: "zaimy-online"
+  amount          String   // Сумма: "1000 рублей"
+  amountValue     Int      // Числовое значение: 1000
+  term            String   // Срок: "на 7 дней"
+  termSlug        String   // URL slug: "na-7-dney"
+  
+  // SEO content (из CSV)
+  pageTitle       String   @db.Text
+  pageDescription String   @db.Text
+  
+  // URL path (генерируется)
+  urlPath         String   @unique // "/zaimy-online/v-moskva/1000-rubley/na-7-dney"
+  
+  // Indexing control
+  isIndexable     Boolean  @default(true)
+  noIndex         Boolean  @default(false)
+  canonicalUrl    String?
+  
+  // Priority (для crawl budget)
+  priority        Int      @default(5) // 1-10, 10 = highest
+  
+  // Content uniqueness
+  contentHash     String?  // MD5 хэш для дедупликации
+  variationSeed   Int      @default(0) // Seed для псевдо-статистики
+  
+  // Analytics
+  viewsCount      Int      @default(0)
+  
+  // Status
+  status          String   @default("published") // published, draft
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Composite indexes для быстрых запросов
+  @@index([citySlug, loanTypeSlug])
+  @@index([citySlug, amountValue])
+  @@index([loanTypeSlug, amountValue])
+  @@index([urlPath])
+  @@index([isIndexable, noIndex])
+  @@index([priority])
+  @@index([status])
+  @@index([isIndexable, noIndex, status]) // Для sitemap запросов
+  @@unique([citySlug, loanTypeSlug, amountValue, termSlug])
+}
+
+// ============================================
+// Health Check - Site Monitoring
+// ============================================
+
+model HealthCheckPage {
+  id          String   @id @default(cuid())
+  url         String   // URL страницы или endpoint
+  name        String   // Человекочитаемое название
+  category    String   // main, mfo, api, static
+  
+  // Настройки проверки
+  checkInterval Int    @default(300) // интервал в секундах (5 мин)
+  timeout       Int     @default(30000) // таймаут в мс
+  priority      Int     @default(3) // 1-5, 1 = критичный
+  
+  // Ожидаемые значения
+  expectedStatus Int    @default(200) // ожидаемый HTTP статус
+  maxResponseTime Int   @default(1000) // макс. время ответа в мс
+  
+  // Текущий статус (кэшированный)
+  lastCheckAt     DateTime?
+  lastStatus      String   @default("unknown") // healthy, warning, error, critical, unknown
+  lastResponseTime Int?
+  lastStatusCode  Int?
+  
+  // SSL информация
+  sslExpiresAt    DateTime?
+  sslIssuer       String?
+  sslDaysLeft     Int?
+  
+  // Статистика
+  totalChecks     Int      @default(0)
+  healthyChecks   Int      @default(0)
+  uptime24h       Float    @default(0) // процент uptime за 24ч
+  uptime7d        Float    @default(0) // процент uptime за 7 дней
+  uptime30d       Float    @default(0) // процент uptime за 30 дней
+  
+  // Управление
+  isActive        Boolean  @default(true)
+  notifyOnError   Boolean  @default(true)
+  notifyOnWarning Boolean  @default(true)
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  checkResults    HealthCheckResult[]
+  incidents       HealthIncident[]
+  
+  @@unique([url])
+  @@index([category])
+  @@index([isActive])
+  @@index([lastStatus])
+  @@index([priority])
+}
+
+model HealthCheckResult {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  // Результат проверки
+  status      String   // healthy, warning, error, critical
+  statusCode  Int?     // HTTP статус код
+  responseTime Int?    // время ответа в мс
+  contentSize Int?     // размер контента в байтах
+  
+  // Детали
+  error       String?  // сообщение об ошибке
+  redirectUrl String?  // URL редиректа, если был
+  
+  // SSL
+  sslValid    Boolean?
+  sslDaysLeft Int?
+  
+  // Метаданные
+  checkedAt   DateTime @default(now())
+  checkDuration Int?   // длительность проверки в мс
+  
+  // Relations
+  page        HealthCheckPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@index([pageId])
+  @@index([status])
+  @@index([checkedAt])
+  @@index([pageId, checkedAt])
+}
+
+model HealthIncident {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  // Информация об инциденте
+  incidentNumber String @unique // INC-001, INC-002, etc.
+  severity    String   // low, medium, high, critical
+  
+  // Детали
+  title       String
+  description String?  @db.Text
+  errorType   String?  // http_error, timeout, ssl_error, etc.
+  errorMessage String?
+  
+  // Временные метки
+  startedAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  duration    Int?     // длительность в минутах
+  
+  // Статус
+  status      String   @default("open") // open, investigating, identified, monitoring, resolved
+  acknowledgedBy String? // ID пользователя
+  acknowledgedAt DateTime?
+  
+  // Решение
+  resolution  String?  @db.Text
+  resolvedBy  String?  // ID пользователя
+  
+  // Уведомления
+  notifiedEmail Boolean @default(false)
+  notifiedSlack Boolean @default(false)
+  notifiedTelegram Boolean @default(false)
+  
+  // Relations
+  page        HealthCheckPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@index([pageId])
+  @@index([severity])
+  @@index([status])
+  @@index([startedAt])
+  @@index([incidentNumber])
+}
+
+model HealthCheckSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   // JSON string
+  category    String   @default("general") // general, notifications, thresholds
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+}

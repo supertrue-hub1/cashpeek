@@ -1,0 +1,43 @@
+# robots.txt для cashpeek.ru
+# https://cashpeek.ru/robots.txt
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: *
+Allow: /
+
+# Запрещаем служебные разделы
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /cabinet/
+Disallow: /cabinet/*
+
+# Запрещаем страницы с параметрами сортировки и фильтрации
+Disallow: /*?sort=*
+Disallow: /*?view=*
+Disallow: /*?utm_*
+Disallow: /*?ref=*
+Disallow: /*?source=*
+
+# Разрешаем пагинацию
+Allow: /*?page=
+
+# Sitemap
+Sitemap: https://cashpeek.ru/sitemap.xml
+
+# Host (для Яндекса)
+Host: cashpeek.ru
