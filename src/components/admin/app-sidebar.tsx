@@ -17,6 +17,7 @@ import {
   User,
   BookOpen,
   Link2,
+  Bot,
 } from "lucide-react"
 
 import {
@@ -67,6 +68,12 @@ const mainNavItems = [
     title: "Синхронизация",
     url: "/admin/sync",
     icon: RefreshCw,
+    badge: null,
+  },
+  {
+    title: "ИИ-ассистент",
+    url: "/admin/assistant",
+    icon: Bot,
     badge: null,
   },
 ]

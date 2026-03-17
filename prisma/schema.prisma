@@ -924,3 +924,39 @@ model HealthCheckSetting {
   
   @@index([category])
 }
+
+// ============================================
+// AI Assistant Settings
+// ============================================
+
+model AssistantSettings {
+  id                 String   @id @default(cuid())
+  systemPrompt       String   @default("Ты — профессиональный ИИ-ассистент сервиса по подбору микрозаймов. Помогаешь пользователю быстро подобрать лучший займ.")
+  welcomeMessage     String   @default("Здравствуйте! 👋 Ищете займ? Помогу подобрать лучшие предложения. Напишите сумму и срок, например: 10 000 рублей на 2 недели")
+  autoOpenDelay      Int      @default(6)
+  enableSound        Boolean  @default(true)
+  enableAutoOpen     Boolean  @default(true)
+  maxLoanResults     Int      @default(4)
+  assistantName      String   @default("ИИ-ассистент")
+  assistantSubtitle  String   @default("Подбор займов онлайн")
+  primaryColor       String   @default("emerald")
+  showQuickActions   Boolean  @default(true)
+  quickActionButtons String   @default("[]")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// ============================================
+// Chat Sessions
+// ============================================
+
+model ChatSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique // Идентификатор сессии (из cookie или generated)
+  messages    String   @default("[]") // JSON массив сообщений
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}

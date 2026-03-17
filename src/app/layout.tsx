@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
+import { ChatWidget } from "@/components/chat-widget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -94,6 +95,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <ChatWidget />
             <Toaster position="top-right" richColors />
           </ThemeProvider>
         </SessionProvider>
