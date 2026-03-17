@@ -32,6 +32,8 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [typingText, setTypingText] = useState('');
+  const [showHint, setShowHint] = useState(true);
   const [settings, setSettings] = useState<ChatSettings | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -47,10 +49,17 @@ export function ChatWidget() {
       .catch(console.error);
   }, []);
 
+  // Скрыть подсказку при скролле
+  useEffect(() => {
+    const handleScroll = () => setShowHint(false);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Прокрутка вниз
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, typingText]);
 
   // Приветственное сообщение
   useEffect(() => {
@@ -62,15 +71,18 @@ export function ChatWidget() {
     }
   }, [isOpen, settings]);
 
-  // Автопоказ подсказки
-  useEffect(() => {
-    if (settings?.enableAutoOpen && settings.autoOpenDelay > 0 && !isOpen) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, settings.autoOpenDelay * 1000);
-      return () => clearTimeout(timer);
+  // Эффект печатания
+  const typeMessage = async (text: string) => {
+    setTypingText('');
+    const chars = text.split('');
+    
+    for (let i = 0; i < chars.length; i++) {
+      await new Promise(r => setTimeout(r, 20 + Math.random() * 30));
+      setTypingText(prev => prev + chars[i]);
     }
-  }, [settings, isOpen]);
+    
+    return text;
+  };
 
   // Отправка сообщения
   const sendMessage = async (text?: string) => {
@@ -78,6 +90,7 @@ export function ChatWidget() {
     if (!messageText || isLoading) return;
 
     setInput('');
+    setShowHint(false);
     setIsLoading(true);
     
     setMessages(prev => [...prev, { role: 'user', content: messageText }]);
@@ -92,14 +105,21 @@ export function ChatWidget() {
       const data = await res.json();
 
       if (data.success) {
+        // Задержка 5 секунд + эффект печатания
+        await new Promise(r => setTimeout(r, 5000));
+        
+        await typeMessage(data.response);
+        
         setMessages(prev => [...prev, { 
           role: 'assistant', 
           content: data.response 
         }]);
+        setTypingText('');
       } else {
         throw new Error(data.error || 'Ошибка');
       }
     } catch (error) {
+      await new Promise(r => setTimeout(r, 2000));
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: 'Ошибка. Попробуйте ещё раз.' 
@@ -115,6 +135,11 @@ export function ChatWidget() {
                      settings?.primaryColor === 'orange' ? 'bg-orange-500 hover:bg-orange-600' :
                      'bg-emerald-500 hover:bg-emerald-600';
 
+  const ringColor = settings?.primaryColor === 'blue' ? 'ring-blue-500/30' :
+                     settings?.primaryColor === 'purple' ? 'ring-purple-500/30' :
+                     settings?.primaryColor === 'orange' ? 'ring-orange-500/30' :
+                     'ring-emerald-500/30';
+
   // Быстрые кнопки
   const quickActions = settings?.quickActionButtons?.length > 0 
     ? settings.quickActionButtons 
@@ -126,12 +151,36 @@ export function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 ${colorClass} text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110`}
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {/* Подсказка "Помочь с займом?" */}
+        {showHint && (
+          <div className="animate-bounce">
+            <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              Помочь с займом? 👋
+            </div>
+          </div>
+        )}
+        
+        {/* Кнопка с анимациями */}
+        <div className="relative">
+          {/* Пульсирующее кольцо */}
+          <div className={`absolute -inset-2 rounded-full animate-ping ${colorClass} opacity-20`} />
+          
+          {/* Свечение */}
+          <div className={`absolute -inset-1 rounded-full ring-4 ${ringColor}`} />
+          
+          {/* Кнопка */}
+          <button
+            onClick={() => {
+              setIsOpen(true);
+              setShowHint(false);
+            }}
+            className={`relative w-14 h-14 ${colorClass} text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:shadow-xl`}
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -175,10 +224,25 @@ export function ChatWidget() {
           </div>
         ))}
         
-        {isLoading && (
+        {/* Эффект печатания */}
+        {typingText && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-2">
-              <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+            <div className="max-w-[85%] rounded-2xl px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+              {typingText}
+              <span className="inline-block w-1 h-4 ml-0.5 bg-emerald-500 animate-pulse" />
+            </div>
+          </div>
+        )}
+        
+        {/* Индикатор загрузки */}
+        {isLoading && !typingText && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
             </div>
           </div>
         )}
