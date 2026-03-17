@@ -10,6 +10,9 @@ import {
   Target,
   Calendar,
   Download,
+  Loader2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +25,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { Bar, BarChart, XAxis, YAxis, Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, Line, LineChart, ResponsiveContainer } from "recharts"
 import {
   Select,
   SelectContent,
@@ -31,32 +34,58 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-// Мок данные для графиков
-const dailyData = [
-  { date: "10 дек", clicks: 145, conversions: 8, revenue: 2450 },
-  { date: "11 дек", clicks: 189, conversions: 12, revenue: 3680 },
-  { date: "12 дек", clicks: 167, conversions: 9, revenue: 2755 },
-  { date: "13 дек", clicks: 234, conversions: 15, revenue: 4590 },
-  { date: "14 дек", clicks: 278, conversions: 18, revenue: 5510 },
-  { date: "15 дек", clicks: 312, conversions: 22, revenue: 6738 },
-  { date: "16 дек", clicks: 289, conversions: 19, revenue: 5819 },
-]
-
-const offerPerformance = [
-  { name: "Займер", clicks: 892, conversions: 67, revenue: 20523, color: "#2563eb" },
-  { name: "MoneyMan", clicks: 756, conversions: 54, revenue: 16542, color: "#16a34a" },
-  { name: "еКапуста", clicks: 634, conversions: 48, revenue: 14694, color: "#9333ea" },
-  { name: "Lime", clicks: 512, conversions: 38, revenue: 11634, color: "#ea580c" },
-  { name: "Турбозайм", clicks: 423, conversions: 31, revenue: 9491, color: "#dc2626" },
-]
-
-const conversionFunnel = [
-  { stage: "Посещения", count: 15420, percentage: 100 },
-  { stage: "Просмотр оффера", count: 4285, percentage: 27.8 },
-  { stage: "Клик по кнопке", count: 1247, percentage: 8.1 },
-  { stage: "Заявка", count: 398, percentage: 2.6 },
-  { stage: "Одобрение", count: 286, percentage: 1.9 },
-]
+// Типы для данных аналитики
+interface AnalyticsData {
+  kpi: {
+    clicks: number
+    conversions: number
+    cr: string
+    revenue: number
+    views: number
+  }
+  topOffers: Array<{
+    rank: number
+    id: string
+    name: string
+    clicks: number
+    conversions: number
+    cr: number
+    epc: number
+    revenue: number
+    isFeatured: boolean
+    rating: number
+  }>
+  distribution: {
+    byStatus: Array<{ status: string; count: number }>
+    newOffers: number
+    featuredOffers: number
+    totalOffers: number
+    totalTags: number
+    totalUsers: number
+  }
+  dailyData: Array<{
+    date: string
+    dateISO: string
+    clicks: number
+    conversions: number
+    revenue: number
+  }>
+  funnel: {
+    visits: number
+    offerViews: number
+    clicks: number
+    applications: number
+    approvals: number
+  }
+  meta: {
+    period: number
+    lastSync: {
+      source: string
+      startedAt: string
+      offersUpdated: number
+    } | null
+  }
+}
 
 const chartConfig = {
   clicks: {
@@ -73,7 +102,88 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+// Форматирование числа с разделителями
+function formatNumber(num: number): string {
+  return num.toLocaleString('ru-RU')
+}
+
+// Форматирование валюты
+function formatCurrency(num: number): string {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    maximumFractionDigits: 0,
+  }).format(num)
+}
+
+// Цвета для офферов
+const offerColors = [
+  "#2563eb", "#16a34a", "#9333ea", "#ea580c", "#dc2626",
+  "#0891b2", "#7c3aed", "#059669", "#d97706", "#db2777"
+];
+
 export default function AnalyticsPage() {
+  const [data, setData] = React.useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [period, setPeriod] = React.useState("7")
+
+  const fetchData = React.useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch(`/api/admin/analytics?period=${period}`)
+      
+      if (!response.ok) {
+        throw new Error("Ошибка загрузки данных")
+      }
+      
+      const result: AnalyticsData = await response.json()
+      setData(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Неизвестная ошибка")
+    } finally {
+      setLoading(false)
+    }
+  }, [period])
+
+  React.useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Рассчитываем макс. значение для прогресс-баров
+  const getMaxRevenue = () => {
+    if (!data?.topOffers.length) return 100
+    return Math.max(...data.topOffers.map(o => o.revenue), 1)
+  }
+  const maxRevenue = getMaxRevenue()
+
+  const handlePeriodChange = (value: string) => {
+    setPeriod(value)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] gap-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <p className="text-red-500 font-medium">{error}</p>
+        <Button onClick={fetchData}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Повторить
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Заголовок */}
@@ -85,21 +195,21 @@ export default function AnalyticsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Select defaultValue="7d">
+          <Select value={period} onValueChange={handlePeriodChange}>
             <SelectTrigger className="w-[180px]">
               <Calendar className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="24h">Последние 24 часа</SelectItem>
-              <SelectItem value="7d">Последние 7 дней</SelectItem>
-              <SelectItem value="30d">Последние 30 дней</SelectItem>
-              <SelectItem value="90d">Последние 90 дней</SelectItem>
+              <SelectItem value="7">Последние 7 дней</SelectItem>
+              <SelectItem value="14">Последние 14 дней</SelectItem>
+              <SelectItem value="30">Последние 30 дней</SelectItem>
+              <SelectItem value="90">Последние 90 дней</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Экспорт
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Обновить
           </Button>
         </div>
       </div>
@@ -112,10 +222,9 @@ export default function AnalyticsPage() {
             <MousePointerClick className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12,847</div>
-            <div className="flex items-center text-xs text-green-600">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +12.5% с прошлой недели
+            <div className="text-2xl font-bold">{formatNumber(data?.kpi.clicks || 0)}</div>
+            <div className="text-xs text-muted-foreground">
+              За последние {period} дней
             </div>
           </CardContent>
         </Card>
@@ -125,10 +234,9 @@ export default function AnalyticsPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">486</div>
-            <div className="flex items-center text-xs text-green-600">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +8.2% с прошлой недели
+            <div className="text-2xl font-bold">{formatNumber(data?.kpi.conversions || 0)}</div>
+            <div className="text-xs text-muted-foreground">
+              За последние {period} дней
             </div>
           </CardContent>
         </Card>
@@ -138,23 +246,21 @@ export default function AnalyticsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3.78%</div>
-            <div className="flex items-center text-xs text-red-600">
-              <TrendingDown className="mr-1 h-3 w-3" />
-              -0.4% с прошлой недели
+            <div className="text-2xl font-bold">{data?.kpi.cr || '0'}%</div>
+            <div className="text-xs text-muted-foreground">
+              Конверсия из клика в заявку
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Доход</CardTitle>
+            <CardTitle className="text-sm font-medium">Оценочный доход</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₽328,450</div>
-            <div className="flex items-center text-xs text-green-600">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +23.1% с прошлой недели
+            <div className="text-2xl font-bold">{formatCurrency(data?.kpi.revenue || 0)}</div>
+            <div className="text-xs text-muted-foreground">
+              ~500₽ за конверсию
             </div>
           </CardContent>
         </Card>
@@ -179,15 +285,17 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                  <LineChart data={dailyData}>
+                  <LineChart data={data?.dailyData || []}>
                     <XAxis
                       dataKey="date"
                       tickLine={false}
                       axisLine={false}
+                      tick={{ fontSize: 12 }}
                     />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
+                      tick={{ fontSize: 12 }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line
@@ -195,14 +303,14 @@ export default function AnalyticsPage() {
                       dataKey="clicks"
                       stroke="var(--color-clicks)"
                       strokeWidth={2}
-                      dot={{ fill: "var(--color-clicks)" }}
+                      dot={{ fill: "var(--color-clicks)", r: 3 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="conversions"
                       stroke="var(--color-conversions)"
                       strokeWidth={2}
-                      dot={{ fill: "var(--color-conversions)" }}
+                      dot={{ fill: "var(--color-conversions)", r: 3 }}
                     />
                   </LineChart>
                 </ChartContainer>
@@ -219,15 +327,17 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                  <BarChart data={dailyData}>
+                  <BarChart data={data?.dailyData || []}>
                     <XAxis
                       dataKey="date"
                       tickLine={false}
                       axisLine={false}
+                      tick={{ fontSize: 12 }}
                     />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
+                      tick={{ fontSize: 12 }}
                       tickFormatter={(value) => `₽${value}`}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -253,60 +363,65 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {offerPerformance.map((offer, index) => {
-                  const cr = ((offer.conversions / offer.clicks) * 100).toFixed(2)
-                  const epc = (offer.revenue / offer.clicks).toFixed(2)
-                  
-                  return (
-                    <div key={offer.name} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: offer.color }}
-                          />
-                          <span className="font-medium">{offer.name}</span>
-                          {index === 0 && (
-                            <Badge variant="default" className="text-xs">
-                              Топ
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <div className="text-muted-foreground">Клики</div>
-                            <div className="font-medium">{offer.clicks.toLocaleString()}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-muted-foreground">Конверсии</div>
-                            <div className="font-medium">{offer.conversions}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-muted-foreground">CR</div>
-                            <div className="font-medium">{cr}%</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-muted-foreground">EPC</div>
-                            <div className="font-medium">₽{epc}</div>
-                          </div>
-                          <div className="text-right min-w-[100px]">
-                            <div className="text-muted-foreground">Доход</div>
-                            <div className="font-medium">₽{offer.revenue.toLocaleString()}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                {data?.topOffers.map((offer, index) => (
+                  <div key={offer.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${(offer.revenue / offerPerformance[0].revenue) * 100}%`,
-                            backgroundColor: offer.color,
-                          }}
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: offerColors[index % offerColors.length] }}
                         />
+                        <span className="font-medium">{offer.name}</span>
+                        {offer.isFeatured && (
+                          <Badge variant="outline" className="text-xs">
+                            ★
+                          </Badge>
+                        )}
+                        {index === 0 && (
+                          <Badge variant="default" className="text-xs bg-yellow-500">
+                            Топ
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-right">
+                          <div className="text-muted-foreground text-xs">Клики</div>
+                          <div className="font-medium">{formatNumber(offer.clicks)}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-muted-foreground text-xs">Конв.</div>
+                          <div className="font-medium">{offer.conversions}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-muted-foreground text-xs">CR</div>
+                          <div className="font-medium">{offer.cr.toFixed(2)}%</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-muted-foreground text-xs">EPC</div>
+                          <div className="font-medium">₽{offer.epc.toFixed(2)}</div>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <div className="text-muted-foreground text-xs">Доход</div>
+                          <div className="font-medium">{formatCurrency(offer.revenue)}</div>
+                        </div>
                       </div>
                     </div>
-                  )
-                })}
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${(offer.revenue / maxRevenue) * 100}%`,
+                          backgroundColor: offerColors[index % offerColors.length],
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {(!data?.topOffers || data.topOffers.length === 0) && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Нет данных об офферах
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -322,43 +437,53 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {conversionFunnel.map((stage, index) => (
-                  <div key={stage.stage} className="relative">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                          {index + 1}
+                {data?.funnel && (
+                  <>
+                    {[
+                      { stage: "Посещения", count: data.funnel.visits, percentage: 100 },
+                      { stage: "Просмотр оффера", count: data.funnel.offerViews, percentage: (data.funnel.offerViews / data.funnel.visits) * 100 },
+                      { stage: "Клик по кнопке", count: data.funnel.clicks, percentage: (data.funnel.clicks / data.funnel.visits) * 100 },
+                      { stage: "Заявка", count: data.funnel.applications, percentage: (data.funnel.applications / data.funnel.visits) * 100 },
+                      { stage: "Одобрение", count: data.funnel.approvals, percentage: (data.funnel.approvals / data.funnel.visits) * 100 },
+                    ].map((stage, index) => (
+                      <div key={stage.stage} className="relative">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                              {index + 1}
+                            </div>
+                            <span className="font-medium">{stage.stage}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-medium">{formatNumber(stage.count)}</span>
+                            <Badge variant="outline">{stage.percentage.toFixed(1)}%</Badge>
+                          </div>
                         </div>
-                        <span className="font-medium">{stage.stage}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-medium">{stage.count.toLocaleString()}</span>
-                        <Badge variant="outline">{stage.percentage}%</Badge>
-                      </div>
-                    </div>
-                    <div className="h-10 rounded-lg bg-muted overflow-hidden">
-                      <div
-                        className="h-full bg-primary/80 rounded-lg transition-all flex items-center px-3"
-                        style={{
-                          width: `${stage.percentage}%`,
-                        }}
-                      >
-                        {stage.percentage > 15 && (
-                          <span className="text-xs font-medium text-primary-foreground">
-                            {stage.count.toLocaleString()}
-                          </span>
+                        <div className="h-10 rounded-lg bg-muted overflow-hidden">
+                          <div
+                            className="h-full bg-primary/80 rounded-lg transition-all flex items-center px-3"
+                            style={{
+                              width: `${Math.max(stage.percentage, 5)}%`,
+                            }}
+                          >
+                            {stage.percentage > 15 && (
+                              <span className="text-xs font-medium text-primary-foreground">
+                                {formatNumber(stage.count)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {index < 4 && stage.count > 0 && (
+                          <div className="flex justify-center py-2">
+                            <div className="text-xs text-muted-foreground">
+                              ↓ {((stage.count > 0 ? (stage.count / (index === 0 ? data.funnel.visits : [data.funnel.visits, data.funnel.offerViews, data.funnel.clicks, data.funnel.applications][index - 1])) : 0) * 100).toFixed(1)}% переходят
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    {index < conversionFunnel.length - 1 && (
-                      <div className="flex justify-center py-2">
-                        <div className="text-xs text-muted-foreground">
-                          ↓ {((conversionFunnel[index + 1].count / stage.count) * 100).toFixed(1)}% переходят на следующий этап
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                    ))}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
