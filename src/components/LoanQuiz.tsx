@@ -150,6 +150,9 @@ function StepTerm({
   onNext: () => void
   onBack: () => void
 }) {
+  // Расчёт при ставке 0,8%
+  const repayment = Math.round(amount + (amount * 0.8 / 100) * term)
+  
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -182,22 +185,11 @@ function StepTerm({
         </div>
       </div>
 
-      <div className="flex gap-2 justify-center">
-        {[7, 14, 21, 30].map((val) => (
-          <Button
-            key={val}
-            variant={term === val ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTerm(val)}
-            className="h-8 text-xs px-3"
-          >
-            {val} дн.
-          </Button>
-        ))}
-      </div>
-
-      <div className="bg-muted/50 rounded-lg p-2 text-center text-sm">
-        К возврату: <span className="font-bold">{formatAmount(amount)} ₽</span>
+      <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-center">
+        <div className="text-xs text-muted-foreground mb-1">К возврату (0,8%):</div>
+        <div className="text-xl font-bold text-emerald-600">
+          {formatAmount(repayment)} ₽
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -284,14 +276,14 @@ function StepResults({
       animate={{ opacity: 1 }}
       className="space-y-2"
     >
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium">Найдено: {offers.length} предложений</span>
-        <Button variant="ghost" size="sm" onClick={onReset} className="h-6 text-xs">
+      <div className="flex items-center justify-between text-xs pt-1">
+        <span className="font-medium">Найдено: {offers.length}</span>
+        <Button variant="ghost" size="sm" onClick={onReset} className="h-6 text-xs text-primary hover:text-primary">
           Изменить
         </Button>
       </div>
 
-      <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
         <AnimatePresence>
           {displayOffers.map((offer, index) => {
             const rateBadge = getRateBadge(offer.rate)
@@ -404,8 +396,8 @@ export default function LoanQuiz() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="border-2" style={{ height: '340px' }}>
-        <CardContent className="p-3 sm:p-4 h-full overflow-hidden">
+      <Card className="border-2" style={{ height: '380px' }}>
+        <CardContent className="p-3 sm:p-4 h-full overflow-y-auto">
           {/* Прогресс */}
           {step < 4 && (
             <div className="flex items-center gap-1.5 mb-3">
@@ -420,8 +412,8 @@ export default function LoanQuiz() {
             </div>
           )}
 
-          {/* Фиксированная высота для предотвращения дёргания */}
-          <div className="h-[260px] overflow-hidden">
+          {/* Контент с прокруткой */}
+          <div className="overflow-y-auto h-full">
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <StepAmount
