@@ -76,7 +76,6 @@ function StepAmount({
 }) {
   return (
     <div className="space-y-3">
-    >
       <div className="text-center space-y-1">
         <h2 className="text-lg font-bold">Сколько вам нужно?</h2>
         <p className="text-xs text-muted-foreground">Выберите сумму займа</p>
@@ -147,7 +146,6 @@ function StepTerm({
   
   return (
     <div className="space-y-3">
-    >
       <div className="text-center space-y-1">
         <h2 className="text-lg font-bold">На какой срок?</h2>
         <p className="text-xs text-muted-foreground">Выберите количество дней</p>
