@@ -14,11 +14,64 @@ try {
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
+  
+  // TypeScript
   typescript: {
     ignoreBuildErrors: true,
   },
+  
+  // React
   reactStrictMode: false,
+  
+  // Оптимизация сборки
+  experimental: {
+    // Улучшенная оптимизация CSS
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      'framer-motion',
+      'recharts',
+      '@tanstack/react-table',
+    ],
+    // Включить turbo для faster builds (опционально)
+    // turbo: {
+    //   resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+    // },
+  },
+  
+  // Webpack конфигурация для стабильности CSS
+  webpack: (config, { isServer }) => {
+    // Отключаем проблемные оптимизации для CSS
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Объединяем все CSS в один бандл
+            styles: {
+              name: 'styles',
+              type: 'css/mini-extract',
+              chunks: 'all',
+              enforce: true,
+            },
+          },
+        },
+      };
+    }
+    
+    // Игнорируем предупреждения о критических зависимостях
+    config.ignoreWarnings = [
+      { module: /node_modules\/z-ai-web-dev-sdk/ },
+      { module: /node_modules\/@mdxeditor/ },
+    ];
+    
+    return config;
+  },
+  
+  // Изображения
   images: {
     remotePatterns: [
       {
