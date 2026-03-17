@@ -49,13 +49,6 @@ export function ChatWidget() {
       .catch(console.error);
   }, []);
 
-  // Скрыть подсказку при скролле
-  useEffect(() => {
-    const handleScroll = () => setShowHint(false);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   // Прокрутка вниз
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
