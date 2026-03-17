@@ -263,17 +263,21 @@ export function ChatWidget() {
                           </span>
                         )}
                         
-                        {loan.affiliateUrl && (
-                          <a
-                            href={loan.affiliateUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`${colorClass} text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-1`}
-                          >
-                            Получить
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
+                        <a
+                          href={loan.affiliateUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            if (!loan.affiliateUrl) {
+                              e.preventDefault();
+                              alert('Добавьте партнёрскую ссылку в админ-панели');
+                            }
+                          }}
+                          className={`${colorClass} text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer`}
+                        >
+                          Получить
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
                       </div>
                     </div>
                   </div>
