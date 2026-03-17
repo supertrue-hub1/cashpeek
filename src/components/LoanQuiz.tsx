@@ -1,15 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback } from 'react'
 import { 
   ArrowRight, 
   ArrowLeft,
   Loader2,
   Star,
-  Clock,
-  TrendingUp,
-  Sparkles,
   RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -79,11 +75,7 @@ function StepAmount({
   onNext: () => void
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-3"
+    <div className="space-y-3">
     >
       <div className="text-center space-y-1">
         <h2 className="text-lg font-bold">Сколько вам нужно?</h2>
@@ -132,7 +124,7 @@ function StepAmount({
         Далее
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
-    </motion.div>
+    </div>
   )
 }
 
@@ -154,11 +146,7 @@ function StepTerm({
   const repayment = Math.round(amount + (amount * 0.8 / 100) * term)
   
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-3"
+    <div className="space-y-3">
     >
       <div className="text-center space-y-1">
         <h2 className="text-lg font-bold">На какой срок?</h2>
@@ -188,7 +176,7 @@ function StepTerm({
       <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-center">
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="text-xs text-muted-foreground">К возврату (0,8%):</span>
-          <span className="text-xs font-medium text-emerald-600">(Первый займ 0%)</span>
+          <span className="text-xs font-bold text-green-600">(Первый займ 0%)</span>
         </div>
         <div className="text-xl font-bold text-emerald-600">
           {formatAmount(repayment)} ₽
@@ -214,19 +202,14 @@ function StepTerm({
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
 // Шаг 3: Поиск (компактный)
 function StepLoading({ amount, term }: { amount: number; term: number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="text-center py-6 space-y-3"
-    >
+    <div className="text-center py-6 space-y-3">
       <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
       
       <div className="space-y-1">
@@ -235,7 +218,7 @@ function StepLoading({ amount, term }: { amount: number; term: number }) {
           {formatAmount(amount)} ₽ на {term} дней
         </p>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -253,11 +236,7 @@ function StepResults({
 }) {
   if (offers.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center py-6 space-y-3"
-      >
+      <div className="text-center py-6 space-y-3">
         <h2 className="text-lg font-bold">Ничего не найдено</h2>
         <p className="text-xs text-muted-foreground">
           Попробуйте изменить параметры
@@ -266,7 +245,7 @@ function StepResults({
           <RefreshCw className="mr-2 h-3 w-3" />
           Изменить
         </Button>
-      </motion.div>
+      </div>
     )
   }
 
@@ -274,11 +253,7 @@ function StepResults({
   const displayOffers = offers.slice(0, 3)
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-2"
-    >
+    <div className="space-y-2">
       <div className="flex items-center justify-between text-xs pt-1">
         <span className="font-medium">Найдено: {offers.length}</span>
         <Button variant="ghost" size="sm" onClick={onReset} className="h-6 text-xs text-primary hover:text-primary">
@@ -287,23 +262,19 @@ function StepResults({
       </div>
 
       <div className="space-y-2">
-        <AnimatePresence>
-          {displayOffers.map((offer, index) => {
-            const rateBadge = getRateBadge(offer.rate)
-            const isTop = index === 0 // Первый займ - топовый
-            
-            return (
-              <motion.div
-                key={offer.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`flex items-center gap-2 p-2 rounded-lg border transition-shadow ${
-                  isTop 
-                    ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800' 
-                    : 'bg-card hover:shadow-sm'
-                }`}
-              >
+        {displayOffers.map((offer, index) => {
+          const rateBadge = getRateBadge(offer.rate)
+          const isTop = index === 0
+          
+          return (
+            <div
+              key={offer.id}
+              className={`flex items-center gap-2 p-2 rounded-lg border transition-shadow ${
+                isTop 
+                  ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800' 
+                  : 'bg-card hover:shadow-sm'
+              }`}
+            >
                 {/* Логотип */}
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${
                   isTop ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-muted'
@@ -355,10 +326,9 @@ function StepResults({
                 >
                   Получить
                 </a>
-              </motion.div>
+              </div>
             )
           })}
-        </AnimatePresence>
       </div>
 
       {offers.length > 3 && (
@@ -366,7 +336,7 @@ function StepResults({
           + ещё {offers.length - 3}
         </p>
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -380,9 +350,11 @@ export default function LoanQuiz() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchOffers = useCallback(async () => {
-    setIsLoading(true)
-    setStep(3)
     setError(null)
+
+    // Сначала переключаем на загрузку без анимации
+    setStep(3)
+    setIsLoading(true)
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1500))
@@ -430,42 +402,36 @@ export default function LoanQuiz() {
 
           {/* Фиксированная высота контента */}
           <div style={{ height: '300px' }}>
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <StepAmount
-                  key="step-1"
-                  amount={amount}
-                  setAmount={setAmount}
-                  onNext={() => setStep(2)}
-                />
-              )}
-              {step === 2 && (
-                <StepTerm
-                  key="step-2"
-                  term={term}
-                  setTerm={setTerm}
-                  amount={amount}
-                  onNext={fetchOffers}
-                  onBack={() => setStep(1)}
-                />
-              )}
-              {step === 3 && (
-                <StepLoading
-                  key="step-3"
-                  amount={amount}
-                  term={term}
-                />
-              )}
-              {step === 4 && (
-                <StepResults
-                  key="step-4"
-                  offers={offers}
-                  amount={amount}
-                  term={term}
-                  onReset={handleReset}
-                />
-              )}
-            </AnimatePresence>
+            {step === 1 && (
+              <StepAmount
+                amount={amount}
+                setAmount={setAmount}
+                onNext={() => setStep(2)}
+              />
+            )}
+            {step === 2 && (
+              <StepTerm
+                term={term}
+                setTerm={setTerm}
+                amount={amount}
+                onNext={fetchOffers}
+                onBack={() => setStep(1)}
+              />
+            )}
+            {step === 3 && (
+              <StepLoading
+                amount={amount}
+                term={term}
+              />
+            )}
+            {step === 4 && (
+              <StepResults
+                offers={offers}
+                amount={amount}
+                term={term}
+                onReset={handleReset}
+              />
+            )}
           </div>
 
           {/* Ошибка */}
