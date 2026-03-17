@@ -16,7 +16,7 @@ import {
   LogOut,
   User,
   BookOpen,
-  Heart,
+  Link,
 } from "lucide-react"
 
 import {
@@ -73,9 +73,9 @@ const mainNavItems = [
 
 const dataNavItems = [
   {
-    title: "Health Check",
-    url: "/admin/health",
-    icon: Heart,
+    title: "Битые ссылки",
+    url: "/admin/broken-links",
+    icon: Link,
     badge: null,
   },
   {
