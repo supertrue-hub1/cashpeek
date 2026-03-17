@@ -272,7 +272,7 @@ export function Header({ className }: HeaderProps) {
                 ))}
               </nav>
               <div className="mt-4 border-t border-border pt-4">
-                {session ? (
+                {session && (
                   <Button 
                     variant="ghost" 
                     className="w-full text-muted-foreground"
@@ -283,18 +283,6 @@ export function Header({ className }: HeaderProps) {
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Выйти
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-border text-foreground hover:bg-accent"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setAuthModalOpen(true);
-                    }}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Войти
                   </Button>
                 )}
               </div>
