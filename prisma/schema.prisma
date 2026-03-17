@@ -299,6 +299,14 @@ model LoanOffer {
   requiresReview Boolean  @default(false) // Anomaly detection flag
   reviewReason   String?  // Reason for review flag
   
+  // Link Checker (Broken Link Guardian)
+  isBroken       Boolean  @default(false) // true если ссылка мёртвая
+  lastChecked    DateTime? // Последняя проверка
+  httpStatus     Int?     // Последний HTTP статус
+  brokenSince    DateTime? // Когда стала битой
+  brokenReason   String?  // Причина (timeout, 404, 500, etc.)
+  ignoreBroken   Boolean  @default(false) // Игнорировать эту ошибку
+  
   // Analytics (cached)
   viewsCount     Int      @default(0)
   clicksCount    Int      @default(0)
@@ -313,6 +321,12 @@ model LoanOffer {
   auditLogs   AuditLog[]
   tags        OfferTag[]
   syncHistory SyncLog[]
+  linkCheckLogs LinkCheckLog[]
+  
+  // Indexes for link checker
+  @@index([isBroken, status])
+  @@index([lastChecked])
+  @@index([syncSource])
 }
 
 // ============================================
@@ -739,6 +753,33 @@ model SeoCombination {
   @@index([status])
   @@index([isIndexable, noIndex, status]) // Для sitemap запросов
   @@unique([citySlug, loanTypeSlug, amountValue, termSlug])
+}
+
+// ============================================
+// Link Checker (Broken Link Guardian)
+// ============================================
+
+model LinkCheckLog {
+  id          String   @id @default(cuid())
+  offerId     String
+  
+  // Результат проверки
+  url         String   // Проверяемый URL
+  statusCode  Int?     // HTTP статус
+  isBroken    Boolean  @default(false)
+  responseTime Int?    // Время ответа в мс
+  errorType   String?  // timeout, network_error, invalid_url, etc.
+  errorMessage String? // Детали ошибки
+  
+  // Метаданные
+  checkedAt   DateTime @default(now())
+  
+  // Relations
+  offer       LoanOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  @@index([offerId])
+  @@index([isBroken])
+  @@index([checkedAt])
 }
 
 // ============================================
