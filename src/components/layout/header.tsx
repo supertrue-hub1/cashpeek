@@ -271,21 +271,6 @@ export function Header({ className }: HeaderProps) {
                   </a>
                 ))}
               </nav>
-              <div className="mt-4 border-t border-border pt-4">
-                {session && (
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-muted-foreground"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleLogout();
-                    }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Выйти
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
         )}
