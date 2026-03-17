@@ -6,16 +6,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const amount = parseInt(searchParams.get('amount') || '10000')
     const term = parseInt(searchParams.get('term') || '14')
-    const sort = searchParams.get('sort') || 'rate' // rate, approval, time
+    const sort = searchParams.get('sort') || 'rate'
 
-    // Построение условий сортировки
+    // Сортировка: 0% → 0.8% → остальные
     let orderBy: any = [
       { isFeatured: 'desc' },
     ]
 
     if (sort === 'rate') {
+      // Сначала firstLoanRate = 0, потом 0.8, потом остальные
       orderBy.unshift({ firstLoanRate: 'asc' })
-      orderBy.unshift({ baseRate: 'asc' })
     } else if (sort === 'approval') {
       orderBy.unshift({ approvalRate: 'desc' })
     } else if (sort === 'time') {
@@ -52,15 +52,37 @@ export async function GET(request: Request) {
     })
 
     // Рассчитываем сумму к возврату для каждого оффера
+    // Логика приоритета: 0% (firstLoanRate=0) → 0.8% (baseRate=0.8) → остальные
     const offersWithCalculation = offers.map((offer) => {
-      const rate = offer.firstLoanRate ?? offer.baseRate
+      // Определяем итоговую ставку: если есть firstLoanRate - используем его, иначе baseRate
+      const rate = offer.firstLoanRate !== null ? offer.firstLoanRate : offer.baseRate
+      
+      // Для сортировки: создаём приоритет (меньше = выше в списке)
+      // 0% = приоритет 1, 0.8% = приоритет 2, остальные = приоритет 3
+      let sortPriority = 3
+      if (rate === 0) {
+        sortPriority = 1
+      } else if (rate <= 0.8) {
+        sortPriority = 2
+      }
+      
       const totalRepayment = Math.round(amount + (amount * rate / 100) * term)
       
       return {
         ...offer,
         rate,
+        sortPriority,
         totalRepayment,
       }
+    })
+
+    // Дополнительная сортировка по приоритету
+    offersWithCalculation.sort((a, b) => {
+      if (a.sortPriority !== b.sortPriority) {
+        return a.sortPriority - b.sortPriority
+      }
+      // При одинаковом приоритете - по одобрению
+      return b.approvalRate - a.approvalRate
     })
 
     return NextResponse.json({
