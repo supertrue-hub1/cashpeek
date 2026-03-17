@@ -3,10 +3,11 @@
 import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, X, CreditCard, Scale, BookOpen, FileText, User, Sun, Moon, ChevronDown, Smartphone, CreditCard as CardIcon, CheckCircle, AlertCircle, Percent, LogOut, Briefcase, Home, Users, Clock, GraduationCap, Calendar } from 'lucide-react';
+import { Menu, X, CreditCard, Scale, Sun, Moon, ChevronDown, Smartphone, CreditCard as CardIcon, CheckCircle, AlertCircle, Percent, LogOut, User, Home, Users, Clock, GraduationCap, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AuthModal } from '@/components/auth/auth-modal';
+import { SearchBar } from '@/components/search-bar';
 
 interface HeaderProps {
   className?: string;
@@ -186,43 +187,35 @@ export function Header({ className }: HeaderProps) {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex md:items-center md:gap-2">
+          <div className="hidden md:flex md:items-center md:gap-3">
+            <SearchBar />
             <ThemeToggle />
             
             {session ? (
-              // Авторизованный пользователь
-              <div className="flex items-center gap-2">
-                <Button asChild variant="outline" className="border-border text-foreground hover:bg-accent hover:text-accent-foreground">
-                  <a href="/cabinet">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Портфель
-                  </a>
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={handleLogout}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Выйти"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-foreground"
+                title="Выйти"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             ) : (
-              // Гость
               <Button 
                 variant="outline" 
                 className="border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                 onClick={() => setAuthModalOpen(true)}
               >
                 <User className="mr-2 h-4 w-4" />
-                Кабинет
+                Войти
               </Button>
             )}
           </div>
 
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center gap-2">
+            <SearchBar />
             <ThemeToggle />
             <button
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors"
@@ -301,25 +294,17 @@ export function Header({ className }: HeaderProps) {
               </nav>
               <div className="mt-4 border-t border-border pt-4">
                 {session ? (
-                  <div className="space-y-2">
-                    <Button asChild variant="outline" className="w-full border-border text-foreground hover:bg-accent">
-                      <a href="/cabinet" onClick={() => setMobileMenuOpen(false)}>
-                        <Briefcase className="mr-2 h-4 w-4" />
-                        Финансовый портфель
-                      </a>
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full text-muted-foreground"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        handleLogout();
-                      }}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Выйти
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-muted-foreground"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Выйти
+                  </Button>
                 ) : (
                   <Button 
                     variant="outline" 
@@ -330,7 +315,7 @@ export function Header({ className }: HeaderProps) {
                     }}
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Войти в кабинет
+                    Войти
                   </Button>
                 )}
               </div>
