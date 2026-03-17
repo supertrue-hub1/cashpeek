@@ -275,8 +275,8 @@ function StepResults({
     )
   }
 
-  // Ограничиваем 5 предложениями для компактности
-  const displayOffers = offers.slice(0, 5)
+  // Ограничиваем 3 предложениями для компактности
+  const displayOffers = offers.slice(0, 3)
 
   return (
     <motion.div
@@ -291,7 +291,7 @@ function StepResults({
         </Button>
       </div>
 
-      <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
         <AnimatePresence>
           {displayOffers.map((offer, index) => {
             const rateBadge = getRateBadge(offer.rate)
@@ -353,9 +353,9 @@ function StepResults({
         </AnimatePresence>
       </div>
 
-      {offers.length > 5 && (
+      {offers.length > 3 && (
         <p className="text-center text-xs text-muted-foreground">
-          + ещё {offers.length - 5} предложений
+          + ещё {offers.length - 3}
         </p>
       )}
     </motion.div>
@@ -404,8 +404,8 @@ export default function LoanQuiz() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="border-2">
-        <CardContent className="p-3 sm:p-4">
+      <Card className="border-2" style={{ height: '340px' }}>
+        <CardContent className="p-3 sm:p-4 h-full overflow-hidden">
           {/* Прогресс */}
           {step < 4 && (
             <div className="flex items-center gap-1.5 mb-3">
@@ -420,8 +420,8 @@ export default function LoanQuiz() {
             </div>
           )}
 
-          {/* Фиксированная минимальная высота для предотвращения дёргания */}
-          <div className="min-h-[280px]">
+          {/* Фиксированная высота для предотвращения дёргания */}
+          <div className="h-[260px] overflow-hidden">
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <StepAmount
