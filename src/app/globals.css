@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /* Источники для сканирования классов Tailwind v4 */
 @source "../components/**/*.{js,ts,jsx,tsx}";
