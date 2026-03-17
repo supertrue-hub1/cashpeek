@@ -1,11 +1,22 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, ExternalLink } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  loans?: LoanResult[];
+}
+
+interface LoanResult {
+  id: string;
+  name: string;
+  logo: string | null;
+  rate: number;
+  term: string;
+  amount: string;
+  affiliateUrl: string | null;
 }
 
 interface ChatSettings {
@@ -33,7 +44,7 @@ export function ChatWidget() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [typingText, setTypingText] = useState('');
-  const [showHint, setShowHint] = useState(true);
+  const [showHint] = useState(true);
   const [settings, setSettings] = useState<ChatSettings | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +94,6 @@ export function ChatWidget() {
     if (!messageText || isLoading) return;
 
     setInput('');
-    setShowHint(false);
     setIsLoading(true);
     
     setMessages(prev => [...prev, { role: 'user', content: messageText }]);
@@ -105,7 +115,8 @@ export function ChatWidget() {
         
         setMessages(prev => [...prev, { 
           role: 'assistant', 
-          content: data.response 
+          content: data.response,
+          loans: data.loans || []
         }]);
         setTypingText('');
       } else {
@@ -164,10 +175,7 @@ export function ChatWidget() {
           
           {/* Кнопка */}
           <button
-            onClick={() => {
-              setIsOpen(true);
-              setShowHint(false);
-            }}
+            onClick={() => setIsOpen(true)}
             className={`relative w-14 h-14 ${colorClass} text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:shadow-xl`}
           >
             <MessageCircle className="w-6 h-6" />
@@ -201,19 +209,77 @@ export function ChatWidget() {
       {/* Messages */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3">
         {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
-                msg.role === 'user'
-                  ? `${colorClass} text-white`
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-              }`}
-            >
-              {msg.content}
+          <div key={i} className="space-y-2">
+            {/* Текст сообщения */}
+            <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? `${colorClass} text-white`
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                }`}
+              >
+                {msg.content}
+              </div>
             </div>
+            
+            {/* Карточки МФО */}
+            {msg.loans && msg.loans.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {msg.loans.map((loan) => (
+                  <div
+                    key={loan.id}
+                    className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {loan.logo ? (
+                          <img 
+                            src={loan.logo} 
+                            alt={loan.name}
+                            className="w-8 h-8 rounded-lg object-contain"
+                          />
+                        ) : (
+                          <div className={`w-8 h-8 rounded-lg ${colorClass} flex items-center justify-center text-white text-xs font-bold`}>
+                            {loan.name.substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm truncate">{loan.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {loan.amount} ₽ • {loan.term}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {loan.rate === 0 ? (
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-1 rounded">
+                            0%
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-500">
+                            {loan.rate}%
+                          </span>
+                        )}
+                        
+                        {loan.affiliateUrl && (
+                          <a
+                            href={loan.affiliateUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${colorClass} text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-1`}
+                          >
+                            Получить
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         
