@@ -50,15 +50,21 @@ export function SearchBar({ placeholder = 'Поиск займов...', classNam
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
   const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
+  const [mounted, setMounted] = React.useState(false);
   
   const inputRef = React.useRef<HTMLInputElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Загрузка истории из localStorage
+  // Загрузка истории из localStorage (только на клиенте)
   React.useEffect(() => {
+    setMounted(true);
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
     if (stored) {
-      setRecentSearches(JSON.parse(stored));
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch {
+        // ignore
+      }
     }
   }, []);
 
@@ -202,7 +208,7 @@ export function SearchBar({ placeholder = 'Поиск займов...', classNam
     );
   };
 
-  const shouldShowDropdown = isOpen && (query.length >= 2 || recentSearches.length > 0);
+  const shouldShowDropdown = mounted && isOpen && (query.length >= 2 || recentSearches.length > 0);
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
