@@ -9,6 +9,7 @@
 
 'use client';
 
+import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 
@@ -23,33 +24,6 @@ declare global {
     ym: any;
     yaCounter: any;
   }
-}
-
-/**
- * Инициализация Яндекс.Метрики
- */
-export function initYM() {
-  if (!YM_ID) {
-    console.warn('[YM] YM_ID not set');
-    return;
-  }
-
-  // Добавляем скрипт
-  const script = document.createElement('script');
-  script.innerHTML = `
-    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-    m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-    
-    ym(${YM_ID}, "init", {
-      clickmap:true,
-      trackLinks:true,
-      accurateTrackBounce:true,
-      webvisor:true,
-      ecommerce:"dataLayer"
-    });
-  `;
-  document.head.appendChild(script);
 }
 
 /**
@@ -136,62 +110,18 @@ export function ecommerceCheckout(productId: string, productName: string, price:
 // ============================================
 
 export const YMGoals = {
-  // Офферы
-  offerClick: (offerId: string) => {
-    reachGoal('OFFER_CLICK', { offerId });
-  },
-  
-  offerApply: (offerId: string) => {
-    reachGoal('OFFER_APPLY', { offerId });
-  },
-  
-  // Фильтры
-  filterApply: (filterName: string) => {
-    reachGoal('FILTER_APPLY', { filterName });
-  },
-  
-  filterReset: () => {
-    reachGoal('FILTER_RESET');
-  },
-  
-  // Поиск
-  search: (query: string, resultsCount: number) => {
-    reachGoal('SEARCH', { query, resultsCount });
-  },
-  
-  // Избранное
-  addToFavorites: (offerId: string) => {
-    reachGoal('ADD_TO_FAVORITES', { offerId });
-  },
-  
-  // Сравнение
-  addToCompare: (offerId: string) => {
-    reachGoal('ADD_TO_COMPARE', { offerId });
-  },
-  
-  viewCompare: () => {
-    reachGoal('VIEW_COMPARE');
-  },
-  
-  // Регистрация
-  signUp: (method: string) => {
-    reachGoal('SIGN_UP', { method });
-  },
-  
-  // Форма заявки
-  formSubmit: (formName: string) => {
-    reachGoal('FORM_SUBMIT', { formName });
-  },
-  
-  // Клик по телефону
-  phoneClick: () => {
-    reachGoal('PHONE_CLICK');
-  },
-  
-  // Клик по email
-  emailClick: () => {
-    reachGoal('EMAIL_CLICK');
-  },
+  offerClick: (offerId: string) => reachGoal('OFFER_CLICK', { offerId }),
+  offerApply: (offerId: string) => reachGoal('OFFER_APPLY', { offerId }),
+  filterApply: (filterName: string) => reachGoal('FILTER_APPLY', { filterName }),
+  filterReset: () => reachGoal('FILTER_RESET'),
+  search: (query: string, resultsCount: number) => reachGoal('SEARCH', { query, resultsCount }),
+  addToFavorites: (offerId: string) => reachGoal('ADD_TO_FAVORITES', { offerId }),
+  addToCompare: (offerId: string) => reachGoal('ADD_TO_COMPARE', { offerId }),
+  viewCompare: () => reachGoal('VIEW_COMPARE'),
+  signUp: (method: string) => reachGoal('SIGN_UP', { method }),
+  formSubmit: (formName: string) => reachGoal('FORM_SUBMIT', { formName }),
+  phoneClick: () => reachGoal('PHONE_CLICK'),
+  emailClick: () => reachGoal('EMAIL_CLICK'),
 };
 
 // ============================================
@@ -199,14 +129,33 @@ export const YMGoals = {
 // ============================================
 
 /**
- * YM Provider - инициализирует метрику
+ * YM Provider - загружает скрипт через Next.js
  */
 export function YMProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    initYM();
-  }, []);
+  if (!YM_ID) {
+    return <>{children}</>;
+  }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Script id="ym-init" strategy="afterInteractive">
+        {`
+          (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+          (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+          
+          ym(${YM_ID}, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true,
+            ecommerce:"dataLayer"
+          });
+        `}
+      </Script>
+      {children}
+    </>
+  );
 }
 
 /**

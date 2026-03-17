@@ -12,6 +12,7 @@
 
 'use client';
 
+import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 
@@ -24,11 +25,6 @@ interface GAEvent {
   category?: string;
   label?: string;
   value?: number;
-}
-
-interface GAPageView {
-  page_path: string;
-  page_title?: string;
 }
 
 // ============================================
@@ -45,34 +41,7 @@ declare global {
 }
 
 /**
- * Инициализация GA4
- */
-export function initGA() {
-  if (!GA_MEASUREMENT_ID) {
-    console.warn('[GA4] GA_ID not set');
-    return;
-  }
-
-  // Добавляем скрипт
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script1);
-
-  // Инициализация
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
-  };
-  window.gtag('js', new Date());
-  window.gtag('config', GA_MEASUREMENT_ID, {
-    page_title: document.title,
-    page_location: window.location.href,
-  });
-}
-
-/**
- * Отправка события pageview
+ * Отправка pageview
  */
 export function pageview(url: string, title?: string) {
   if (!window.gtag || !GA_MEASUREMENT_ID) return;
@@ -101,110 +70,52 @@ export function event({ action, category, label, value }: GAEvent) {
 // ============================================
 
 export const GAEvents = {
-  // Офферы
   offerClick: (offerName: string, offerId: string) => {
-    event({
-      action: 'select_content',
-      category: 'offers',
-      label: offerName,
-      value: Number(offerId),
-    });
+    event({ action: 'select_content', category: 'offers', label: offerName, value: Number(offerId) });
   },
   
   offerApply: (offerName: string, amount: number) => {
-    event({
-      action: 'begin_checkout',
-      category: 'offers',
-      label: offerName,
-      value: amount,
-    });
+    event({ action: 'begin_checkout', category: 'offers', label: offerName, value: amount });
   },
   
-  // Поиск
   search: (query: string, resultsCount: number) => {
-    event({
-      action: 'search',
-      category: 'site',
-      label: query,
-      value: resultsCount,
-    });
+    event({ action: 'search', category: 'site', label: query, value: resultsCount });
   },
   
-  // Фильтры
   filterApply: (filterName: string, filterValue: string) => {
-    event({
-      action: 'apply_filter',
-      category: 'filters',
-      label: `${filterName}: ${filterValue}`,
-    });
+    event({ action: 'apply_filter', category: 'filters', label: `${filterName}: ${filterValue}` });
   },
   
   filterReset: () => {
-    event({
-      action: 'reset_filters',
-      category: 'filters',
-    });
+    event({ action: 'reset_filters', category: 'filters' });
   },
   
-  // Избранное
   addToFavorites: (offerName: string) => {
-    event({
-      action: 'add_to_wishlist',
-      category: 'favorites',
-      label: offerName,
-    });
+    event({ action: 'add_to_wishlist', category: 'favorites', label: offerName });
   },
   
   removeFromFavorites: (offerName: string) => {
-    event({
-      action: 'remove_from_wishlist',
-      category: 'favorites',
-      label: offerName,
-    });
+    event({ action: 'remove_from_wishlist', category: 'favorites', label: offerName });
   },
   
-  // Сравнение
   addToCompare: (offerName: string) => {
-    event({
-      action: 'add_to_compare',
-      category: 'compare',
-      label: offerName,
-    });
+    event({ action: 'add_to_compare', category: 'compare', label: offerName });
   },
   
   viewCompare: () => {
-    event({
-      action: 'view_compare',
-      category: 'compare',
-    });
+    event({ action: 'view_compare', category: 'compare' });
   },
   
-  // Регистрация / Логин
   signUp: (method: string) => {
-    event({
-      action: 'sign_up',
-      category: 'auth',
-      label: method,
-    });
+    event({ action: 'sign_up', category: 'auth', label: method });
   },
   
-  // Скролл
   scrollDepth: (depth: number) => {
-    event({
-      action: 'scroll',
-      category: 'engagement',
-      label: `${depth}%`,
-    });
+    event({ action: 'scroll', category: 'engagement', label: `${depth}%` });
   },
   
-  // Время на странице
   timeOnPage: (seconds: number) => {
-    event({
-      action: 'timing_complete',
-      category: 'engagement',
-      label: 'time_on_page',
-      value: seconds,
-    });
+    event({ action: 'timing_complete', category: 'engagement', label: 'time_on_page', value: seconds });
   },
 };
 
@@ -213,14 +124,30 @@ export const GAEvents = {
 // ============================================
 
 /**
- * GA4 Provider - инициализирует аналитику
+ * GA4 Provider - загружает GA скрипт через Next.js
  */
 export function GAProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    initGA();
-  }, []);
+  if (!GA_MEASUREMENT_ID) {
+    return <>{children}</>;
+  }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="ga-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function() { window.dataLayer.push(arguments); };
+          window.gtag('js', new Date());
+          window.gtag('config', '${GA_MEASUREMENT_ID}');
+        `}
+      </Script>
+      {children}
+    </>
+  );
 }
 
 /**
