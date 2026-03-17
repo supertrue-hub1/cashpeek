@@ -186,7 +186,10 @@ function StepTerm({
       </div>
 
       <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-center">
-        <div className="text-xs text-muted-foreground mb-1">К возврату (0,8%):</div>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <span className="text-xs text-muted-foreground">К возврату (0,8%):</span>
+          <span className="text-xs font-medium text-emerald-600">(Первый займ 0%!)</span>
+        </div>
         <div className="text-xl font-bold text-emerald-600">
           {formatAmount(repayment)} ₽
         </div>
@@ -283,10 +286,11 @@ function StepResults({
         </Button>
       </div>
 
-      <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+      <div className="space-y-2">
         <AnimatePresence>
           {displayOffers.map((offer, index) => {
             const rateBadge = getRateBadge(offer.rate)
+            const isTop = index === 0 // Первый займ - топовый
             
             return (
               <motion.div
@@ -294,14 +298,20 @@ function StepResults({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-2 p-2 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                className={`flex items-center gap-2 p-2 rounded-lg border transition-shadow ${
+                  isTop 
+                    ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800' 
+                    : 'bg-card hover:shadow-sm'
+                }`}
               >
                 {/* Логотип */}
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${
+                  isTop ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-muted'
+                }`}>
                   {offer.logo ? (
-                    <img src={offer.logo} alt={offer.name} className="w-8 h-8 object-contain" />
+                    <img src={offer.logo} alt={offer.name} className="w-10 h-10 object-contain" />
                   ) : (
-                    <span className="text-sm font-bold text-primary">
+                    <span className={`text-lg font-bold ${isTop ? 'text-orange-600' : 'text-primary'}`}>
                       {offer.name.charAt(0)}
                     </span>
                   )}
@@ -310,23 +320,25 @@ function StepResults({
                 {/* Информация */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
-                    <span className="font-semibold text-sm truncate">{offer.name}</span>
+                    <span className={`font-semibold truncate ${isTop ? 'text-orange-700 dark:text-orange-400' : ''}`}>
+                      {offer.name}
+                    </span>
+                    {isTop && (
+                      <Badge className="bg-orange-500 text-white text-[10px] py-0 h-5">
+                        Лучшая ставка
+                      </Badge>
+                    )}
                     <Badge variant="outline" className={`text-[10px] py-0 h-5 ${rateBadge.className}`}>
                       {offer.rate === 0 && <Star className="w-2.5 h-2.5 mr-0.5" />}
                       {rateBadge.label}
                     </Badge>
-                    {offer.isFeatured && (
-                      <Badge className="bg-yellow-500/10 text-yellow-700 border-yellow-200 text-[10px] py-0 h-5">
-                        <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-                      </Badge>
-                    )}
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{offer.approvalRate}% одобр.</span>
                     <span>•</span>
                     <span>{offer.decisionTime === 0 ? 'Мгновенно' : `${offer.decisionTime} мин`}</span>
                     <span>•</span>
-                    <span className="font-medium">{formatAmount(calculateRepayment(amount, offer.rate, term))} ₽</span>
+                    <span className="font-medium text-foreground">{formatAmount(calculateRepayment(amount, offer.rate, term))} ₽</span>
                   </div>
                 </div>
 
@@ -335,7 +347,11 @@ function StepResults({
                   href={offer.affiliateUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 px-3 py-1.5 rounded-lg font-semibold text-xs bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+                  className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm ${
+                    isTop
+                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600'
+                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700'
+                  }`}
                 >
                   Получить
                 </a>
@@ -396,8 +412,8 @@ export default function LoanQuiz() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="border-2" style={{ height: '380px' }}>
-        <CardContent className="p-3 sm:p-4 h-full overflow-y-auto">
+      <Card className="border-2">
+        <CardContent className="p-3 sm:p-4">
           {/* Прогресс */}
           {step < 4 && (
             <div className="flex items-center gap-1.5 mb-3">
@@ -412,8 +428,8 @@ export default function LoanQuiz() {
             </div>
           )}
 
-          {/* Контент с прокруткой */}
-          <div className="overflow-y-auto h-full">
+          {/* Контент */}
+          <div className="h-full">
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <StepAmount
