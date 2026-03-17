@@ -227,9 +227,18 @@ export function ChatWidget() {
             {msg.loans && msg.loans.length > 0 && (
               <div className="space-y-2 mt-2">
                 {msg.loans.map((loan) => (
-                  <div
+                  <a
                     key={loan.id}
-                    className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700"
+                    href={loan.affiliateUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      if (!loan.affiliateUrl) {
+                        e.preventDefault();
+                        alert('Добавьте партнёрскую ссылку в админ-панели');
+                      }
+                    }}
+                    className="block bg-gray-50 dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
@@ -263,24 +272,10 @@ export function ChatWidget() {
                           </span>
                         )}
                         
-                        <a
-                          href={loan.affiliateUrl || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => {
-                            if (!loan.affiliateUrl) {
-                              e.preventDefault();
-                              alert('Добавьте партнёрскую ссылку в админ-панели');
-                            }
-                          }}
-                          className={`${colorClass} text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer`}
-                        >
-                          Получить
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                        <ExternalLink className="w-4 h-4 text-gray-400" />
                       </div>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             )}
