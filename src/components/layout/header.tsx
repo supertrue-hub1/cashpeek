@@ -103,9 +103,9 @@ export function Header({ className }: HeaderProps) {
           className
         )}
       >
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8 relative">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2.5 group">
+          <a href="/" className="flex items-center gap-2.5 group flex-shrink-0">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm transition-shadow group-hover:shadow-md">
               <CreditCard className="h-4 w-4 text-primary-foreground" />
             </div>
@@ -114,8 +114,8 @@ export function Header({ className }: HeaderProps) {
             </span>
           </a>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex md:items-center md:gap-8">
+          {/* Desktop nav - по центру */}
+          <nav className="hidden md:flex md:items-center md:gap-8 absolute left-1/2 -translate-x-1/2">
             {/* Главная */}
             <a
               href="/"
