@@ -13,6 +13,9 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Loader2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,36 +36,60 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer } from "recharts"
 
-// Мок данные для графиков
-const weeklyData = [
-  { day: "Пн", clicks: 245, conversions: 12 },
-  { day: "Вт", clicks: 312, conversions: 18 },
-  { day: "Ср", clicks: 289, conversions: 15 },
-  { day: "Чт", clicks: 378, conversions: 22 },
-  { day: "Пт", clicks: 445, conversions: 28 },
-  { day: "Сб", clicks: 267, conversions: 14 },
-  { day: "Вс", clicks: 198, conversions: 9 },
-]
-
-const monthlyData = [
-  { month: "Янв", revenue: 45000, users: 120 },
-  { month: "Фев", revenue: 52000, users: 145 },
-  { month: "Мар", revenue: 48000, users: 132 },
-  { month: "Апр", revenue: 61000, users: 168 },
-  { month: "Май", revenue: 55000, users: 155 },
-  { month: "Июн", revenue: 67000, users: 189 },
-]
-
-// Мок последние транзиции
-const recentTransactions = [
-  { id: 1, offer: "Займер", status: "approved", amount: 15000, time: "2 мин назад" },
-  { id: 2, offer: "MoneyMan", status: "pending", amount: 30000, time: "5 мин назад" },
-  { id: 3, offer: "еКапуста", status: "approved", amount: 5000, time: "12 мин назад" },
-  { id: 4, offer: "Lime", status: "rejected", amount: 50000, time: "25 мин назад" },
-  { id: 5, offer: "Турбозайм", status: "approved", amount: 20000, time: "32 мин назад" },
-]
+// Типы для данных
+interface DashboardStats {
+  offers: {
+    total: number
+    published: number
+    draft: number
+    featured: number
+    tags: number
+  }
+  stats: {
+    views: number
+    clicks: number
+    conversions: number
+    users: number
+  }
+  topOffers: Array<{
+    rank: number
+    id: string
+    name: string
+    conversions: number
+    clicks: number
+    views: number
+    isFeatured: boolean
+  }>
+  recentUpdates: Array<{
+    id: string
+    name: string
+    status: string
+    updatedAt: string
+  }>
+  sync: {
+    lastSync: {
+      id: string
+      source: string
+      status: string
+      startedAt: string
+      completedAt?: string
+      offersUpdated: number
+      offersAdded: number
+      errors: number
+    } | null
+    recentSyncs: Array<{
+      id: string
+      source: string
+      status: string
+      startedAt: string
+      offersProcessed: number
+      offersUpdated: number
+      errors: number
+    }>
+  }
+}
 
 const chartConfig = {
   clicks: {
@@ -85,7 +112,7 @@ function StatCard({
   trendUp,
 }: {
   title: string
-  value: string
+  value: string | number
   description: string
   icon: React.ElementType
   trend?: string
@@ -113,31 +140,114 @@ function StatCard({
   )
 }
 
-// Статус транзакции
+// Статус оффера
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ElementType }> = {
-    approved: { variant: "default", icon: CheckCircle2 },
-    pending: { variant: "secondary", icon: Clock },
-    rejected: { variant: "destructive", icon: XCircle },
+    published: { variant: "default", icon: CheckCircle2 },
+    draft: { variant: "secondary", icon: Clock },
+    archived: { variant: "destructive", icon: XCircle },
   }
 
   const labels: Record<string, string> = {
-    approved: "Одобрено",
-    pending: "В ожидании",
-    rejected: "Отклонено",
+    published: "Опубликован",
+    draft: "Черновик",
+    archived: "Архив",
   }
 
-  const { variant, icon: Icon } = variants[status] || variants.pending
+  const { variant, icon: Icon } = variants[status] || variants.draft
 
   return (
     <Badge variant={variant} className="gap-1">
       <Icon className="h-3 w-3" />
-      {labels[status]}
+      {labels[status] || status}
     </Badge>
   )
 }
 
+// Форматирование времени
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 1) return 'Только что'
+  if (diffMins < 60) return `${diffMins} мин назад`
+  if (diffHours < 24) return `${diffHours} ч назад`
+  return `${diffDays} дн назад`
+}
+
 export default function AdminDashboard() {
+  const [data, setData] = React.useState<DashboardStats | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [period, setPeriod] = React.useState("7")
+
+  const fetchData = React.useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch(`/api/admin/dashboard?period=${period}`)
+      
+      if (!response.ok) {
+        throw new Error("Ошибка загрузки данных")
+      }
+      
+      const result: DashboardStats = await response.json()
+      setData(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Неизвестная ошибка")
+    } finally {
+      setLoading(false)
+    }
+  }, [period])
+
+  React.useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Данные для графика (mock для визуализации, в реальном проекте нужны исторические данные)
+  const weeklyData = [
+    { day: "Пн", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 1.2) : 245, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 1.2) : 12 },
+    { day: "Вт", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 1.4) : 312, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 1.4) : 18 },
+    { day: "Ср", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 1.1) : 289, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 1.1) : 15 },
+    { day: "Чт", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 1.5) : 378, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 1.5) : 22 },
+    { day: "Пт", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 1.8) : 445, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 1.8) : 28 },
+    { day: "Сб", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 0.9) : 267, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 0.9) : 14 },
+    { day: "Вс", clicks: data?.stats.clicks ? Math.floor(data.stats.clicks / 7 * 0.7) : 198, conversions: data?.stats.conversions ? Math.floor(data.stats.conversions / 7 * 0.7) : 9 },
+  ]
+
+  // Рассчитываем процент для прогресс-бара
+  const getMaxConversions = () => {
+    if (!data?.topOffers.length) return 100
+    return Math.max(...data.topOffers.map(o => o.conversions), 1)
+  }
+  const maxConversions = getMaxConversions()
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] gap-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <p className="text-red-500 font-medium">{error}</p>
+        <Button onClick={fetchData}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Повторить
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Заголовок */}
@@ -149,12 +259,15 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Clock className="mr-2 h-4 w-4" />
-            За последние 7 дней
+          <Button variant="outline" size="sm" onClick={() => setPeriod("7")}>
+            7 дней
           </Button>
-          <Button size="sm">
-            Экспорт
+          <Button variant="outline" size="sm" onClick={() => setPeriod("30")}>
+            30 дней
+          </Button>
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Обновить
           </Button>
         </div>
       </div>
@@ -163,32 +276,26 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Всего переходов"
-          value="12,847"
-          description="за месяц"
+          value={data?.stats.clicks?.toLocaleString() || 0}
+          description="за период"
           icon={MousePointerClick}
-          trend="+12.5%"
-          trendUp={true}
         />
         <StatCard
           title="Конверсии"
-          value="486"
-          description="за месяц"
+          value={data?.stats.conversions?.toLocaleString() || 0}
+          description="за период"
           icon={TrendingUp}
-          trend="+8.2%"
-          trendUp={true}
         />
         <StatCard
-          title="Доход"
-          value="₽328,450"
-          description="за месяц"
+          title="Просмотры"
+          value={data?.stats.views?.toLocaleString() || 0}
+          description="за период"
           icon={DollarSign}
-          trend="+23.1%"
-          trendUp={true}
         />
         <StatCard
           title="Активных офферов"
-          value="8"
-          description="из 8 подключённых"
+          value={data?.offers.published || 0}
+          description={`из ${data?.offers.total || 0} всего`}
           icon={CreditCard}
         />
       </div>
@@ -243,39 +350,46 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Займер", conversions: 89, percentage: 100 },
-                { name: "MoneyMan", conversions: 72, percentage: 81 },
-                { name: "еКапуста", conversions: 65, percentage: 73 },
-                { name: "Lime", conversions: 54, percentage: 61 },
-                { name: "Турбозайм", conversions: 41, percentage: 46 },
-              ].map((offer, index) => (
-                <div key={offer.name} className="space-y-2">
+              {data?.topOffers.map((offer) => (
+                <div key={offer.id} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-muted-foreground w-4">
-                        {index + 1}
+                        {offer.rank}
                       </span>
                       <span className="font-medium">{offer.name}</span>
+                      {offer.isFeatured && (
+                        <Badge variant="outline" className="text-xs py-0 h-5">
+                          ★
+                        </Badge>
+                      )}
                     </div>
                     <span className="text-muted-foreground">
-                      {offer.conversions} конверсий
+                      {offer.conversions} конв.
                     </span>
                   </div>
-                  <Progress value={offer.percentage} className="h-2" />
+                  <Progress 
+                    value={(offer.conversions / maxConversions) * 100} 
+                    className="h-2" 
+                  />
                 </div>
               ))}
+              {(!data?.topOffers || data.topOffers.length === 0) && (
+                <p className="text-center text-muted-foreground py-4">
+                  Нет данных о конверсиях
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Последние транзакции */}
+      {/* Последние обновления офферов */}
       <Card>
         <CardHeader>
-          <CardTitle>Последние заявки</CardTitle>
+          <CardTitle>Последние обновления</CardTitle>
           <CardDescription>
-            Последние 5 заявок через ваш агрегатор
+            Недавно обновлённые офферы
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -284,25 +398,28 @@ export default function AdminDashboard() {
               <TableRow>
                 <TableHead>Оффер</TableHead>
                 <TableHead>Статус</TableHead>
-                <TableHead className="text-right">Сумма</TableHead>
-                <TableHead className="text-right">Время</TableHead>
+                <TableHead className="text-right">Обновлён</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentTransactions.map((tx) => (
-                <TableRow key={tx.id}>
-                  <TableCell className="font-medium">{tx.offer}</TableCell>
+              {data?.recentUpdates.slice(0, 5).map((offer) => (
+                <TableRow key={offer.id}>
+                  <TableCell className="font-medium">{offer.name}</TableCell>
                   <TableCell>
-                    <StatusBadge status={tx.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ₽{tx.amount.toLocaleString()}
+                    <StatusBadge status={offer.status} />
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {tx.time}
+                    {formatTimeAgo(offer.updatedAt)}
                   </TableCell>
                 </TableRow>
               ))}
+              {(!data?.recentUpdates || data.recentUpdates.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                    Нет недавних обновлений
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -313,29 +430,53 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle>Синхронизация Leads.su</CardTitle>
-              <Badge variant="default" className="bg-green-600">
-                Активно
-              </Badge>
+              <CardTitle>Синхронизация</CardTitle>
+              {data?.sync.lastSync ? (
+                <Badge 
+                  variant="default" 
+                  className={data.sync.lastSync.status === 'success' ? 'bg-green-600' : 'bg-yellow-600'}
+                >
+                  {data.sync.lastSync.status === 'success' ? 'Активно' : 'Ошибка'}
+                </Badge>
+              ) : (
+                <Badge variant="secondary">Нет данных</Badge>
+              )}
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Последняя синхронизация</span>
-                <span className="font-medium">15 мин назад</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Обновлено офферов</span>
-                <span className="font-medium">8 из 8</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Статус API</span>
-                <span className="text-green-600 font-medium flex items-center gap-1">
-                  <Activity className="h-3 w-3" />
-                  Работает
-                </span>
-              </div>
+              {data?.sync.lastSync ? (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Последняя синхронизация</span>
+                    <span className="font-medium">
+                      {formatTimeAgo(data.sync.lastSync.startedAt)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Источник</span>
+                    <span className="font-medium">{data.sync.lastSync.source}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Обновлено офферов</span>
+                    <span className="font-medium">
+                      {data.sync.lastSync.offersUpdated + data.sync.lastSync.offersAdded} 
+                      {data.sync.lastSync.errors > 0 && ` (${data.sync.lastSync.errors} ошибок)`}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Статус API</span>
+                    <span className={`font-medium flex items-center gap-1 ${
+                      data.sync.lastSync.status === 'success' ? 'text-green-600' : 'text-yellow-600'
+                    }`}>
+                      <Activity className="h-3 w-3" />
+                      {data.sync.lastSync.status === 'success' ? 'Работает' : 'Ошибка'}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted-foreground text-sm">Нет данных о синхронизации</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -345,17 +486,29 @@ export default function AdminDashboard() {
             <CardTitle>Быстрые действия</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-start">
-              <TrendingUp className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = '/admin/sync'}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
               Запустить синхронизацию
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = '/admin/offers'}
+            >
               <CreditCard className="mr-2 h-4 w-4" />
-              Добавить новый оффер
+              Управление офферами
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = '/admin/audit-logs'}
+            >
               <Users className="mr-2 h-4 w-4" />
-              Экспорт отчёта
+              История изменений
             </Button>
           </CardContent>
         </Card>
