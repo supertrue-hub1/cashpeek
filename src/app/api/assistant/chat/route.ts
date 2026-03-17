@@ -37,38 +37,25 @@ function extractTerm(text: string): number | null {
   return null;
 }
 
-// Поиск займов
-async function searchLoans(amount: number, term: number, limit: number = 4) {
+// Поиск МФО
+async function searchMfos(amount: number, term: number, limit: number = 4) {
   try {
-    const loans = await db.loanOffer.findMany({
+    const mfos = await db.assistantMfo.findMany({
       where: {
-        status: 'published',
+        isActive: true,
         minAmount: { lte: amount },
         maxAmount: { gte: amount },
         minTerm: { lte: term },
         maxTerm: { gte: term },
       },
-      select: {
-        id: true,
-        name: true,
-        logo: true,
-        minAmount: true,
-        maxAmount: true,
-        minTerm: true,
-        maxTerm: true,
-        baseRate: true,
-        firstLoanRate: true,
-        decisionTime: true,
-        affiliateUrl: true,
-      },
       orderBy: [
         { firstLoanRate: 'asc' },
-        { baseRate: 'asc' },
+        { sortOrder: 'asc' },
       ],
       take: limit,
     });
 
-    return loans;
+    return mfos;
   } catch (error) {
     console.error('DB error:', error);
     return [];
@@ -76,21 +63,21 @@ async function searchLoans(amount: number, term: number, limit: number = 4) {
 }
 
 // Формирование ответа
-function formatResponse(loans: any[], amount: number, term: number): string {
-  if (loans.length === 0) {
-    return `К сожалению, нет займов на ${amount.toLocaleString()} рублей на ${term} дней.
+function formatResponse(mfos: any[], amount: number, term: number): string {
+  if (mfos.length === 0) {
+    return `К сожалению, нет подходящих вариантов на ${amount.toLocaleString()} ₽ на ${term} дней.
 
 Попробуйте изменить параметры:
 • Увеличьте срок до ${term + 7} дней
-• Или сумму до ${amount + 5000} рублей`;
+• Или сумму до ${amount + 5000} ₽`;
   }
 
-  let response = `Подобрал ${loans.length} варианта на ${amount.toLocaleString()} руб.:\n\n`;
+  let response = `Подобрал ${mfos.length} варианта на ${amount.toLocaleString()} ₽:\n\n`;
 
-  loans.forEach((loan, i) => {
-    const rate = loan.firstLoanRate === 0 ? '0%' : `${loan.baseRate}%`;
-    response += `${i + 1}. ${loan.name}: ${loan.minAmount.toLocaleString()}-${loan.maxAmount.toLocaleString()} руб., ставка ${rate}/день`;
-    if (loan.firstLoanRate === 0) response += ` ✅`;
+  mfos.forEach((mfo, i) => {
+    const rate = mfo.firstLoanRate === 0 ? '0%' : `${mfo.baseRate}%`;
+    response += `${i + 1}. ${mfo.name}: ${mfo.minAmount.toLocaleString()}-${mfo.maxAmount.toLocaleString()} ₽, ставка ${rate}/день`;
+    if (mfo.firstLoanRate === 0) response += ` ✅`;
     response += `\n\n`;
   });
 
@@ -120,20 +107,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const loans = await searchLoans(amount, term, 4);
-    const response = formatResponse(loans, amount, term);
+    const mfos = await searchMfos(amount, term, 4);
+    const response = formatResponse(mfos, amount, term);
 
     return NextResponse.json({
       success: true,
       response,
-      loans: loans.map(l => ({
-        id: l.id,
-        name: l.name,
-        logo: l.logo,
-        rate: l.firstLoanRate === 0 ? 0 : l.baseRate,
-        term: `${l.minTerm}-${l.maxTerm} дней`,
-        amount: `${l.minAmount}-${l.maxAmount}`,
-        affiliateUrl: l.affiliateUrl,
+      loans: mfos.map(m => ({
+        id: m.id,
+        name: m.name,
+        logo: m.logo,
+        rate: m.firstLoanRate === 0 ? 0 : m.baseRate,
+        term: `${m.minTerm}-${m.maxTerm} дней`,
+        amount: `${m.minAmount}-${m.maxAmount}`,
+        affiliateUrl: m.affiliateUrl,
       })),
     });
   } catch (error) {

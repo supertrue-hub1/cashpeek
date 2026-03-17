@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Save, Sparkles, Palette, MessageSquare, Zap } from 'lucide-react';
+import { Save, Sparkles, Palette, MessageSquare, Zap, Building2, Plus, Trash2, GripVertical, ExternalLink } from 'lucide-react';
 
 interface AssistantSettings {
   id: string;
@@ -28,6 +28,23 @@ interface AssistantSettings {
   quickActionButtons: { label: string; action: string }[];
 }
 
+interface Mfo {
+  id: string;
+  name: string;
+  logo: string | null;
+  minAmount: number;
+  maxAmount: number;
+  minTerm: number;
+  maxTerm: number;
+  baseRate: number;
+  firstLoanRate: number | null;
+  decisionTime: number;
+  affiliateUrl: string | null;
+  features: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 const COLORS = [
   { value: 'emerald', label: 'Изумрудный' },
   { value: 'blue', label: 'Синий' },
@@ -37,25 +54,36 @@ const COLORS = [
 
 export default function AssistantSettingsPage() {
   const [settings, setSettings] = useState<AssistantSettings | null>(null);
+  const [mfos, setMfos] = useState<Mfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingMfo, setEditingMfo] = useState<Mfo | null>(null);
 
-  // Загрузка настроек
+  // Загрузка данных
   useEffect(() => {
-    async function loadSettings() {
+    async function loadData() {
       try {
-        const res = await fetch('/api/assistant/settings');
-        const data = await res.json();
-        if (data.success) {
-          setSettings(data.settings);
+        const [settingsRes, mfoRes] = await Promise.all([
+          fetch('/api/assistant/settings'),
+          fetch('/api/assistant/mfo'),
+        ]);
+        
+        const settingsData = await settingsRes.json();
+        const mfoData = await mfoRes.json();
+        
+        if (settingsData.success) {
+          setSettings(settingsData.settings);
+        }
+        if (mfoData.success) {
+          setMfos(mfoData.mfos);
         }
       } catch (error) {
-        console.error('Failed to load settings:', error);
+        console.error('Failed to load:', error);
       } finally {
         setLoading(false);
       }
     }
-    loadSettings();
+    loadData();
   }, []);
 
   // Сохранение настроек
@@ -84,6 +112,73 @@ export default function AssistantSettingsPage() {
     }
   };
 
+  // Сохранение МФО
+  const saveMfo = async (mfo: Partial<Mfo>) => {
+    try {
+      const url = mfo.id ? `/api/assistant/mfo/${mfo.id}` : '/api/assistant/mfo';
+      const method = mfo.id ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mfo),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(mfo.id ? 'МФО обновлено' : 'МФО добавлено');
+        setEditingMfo(null);
+        // Перезагружаем список
+        const mfoRes = await fetch('/api/assistant/mfo');
+        const mfoData = await mfoRes.json();
+        if (mfoData.success) {
+          setMfos(mfoData.mfos);
+        }
+      } else {
+        toast.error('Ошибка сохранения');
+      }
+    } catch (error) {
+      toast.error('Ошибка сохранения');
+    }
+  };
+
+  // Удаление МФО
+  const deleteMfo = async (id: string) => {
+    if (!confirm('Удалить это МФО?')) return;
+    
+    try {
+      const res = await fetch(`/api/assistant/mfo/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('МФО удалено');
+        setMfos(mfos.filter(m => m.id !== id));
+      }
+    } catch (error) {
+      toast.error('Ошибка удаления');
+    }
+  };
+
+  // Переключение активности МФО
+  const toggleMfoActive = async (id: string, isActive: boolean) => {
+    try {
+      const res = await fetch(`/api/assistant/mfo/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setMfos(mfos.map(m => m.id === id ? { ...m, isActive } : m));
+      }
+    } catch (error) {
+      toast.error('Ошибка');
+    }
+  };
+
   if (loading) {
     return <div className="p-8">Загрузка...</div>;
   }
@@ -107,8 +202,12 @@ export default function AssistantSettingsPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="behavior" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-4">
+      <Tabs defaultValue="mfo" className="w-full">
+        <TabsList className="grid w-full max-w-lg grid-cols-5">
+          <TabsTrigger value="mfo" className="gap-2">
+            <Building2 className="w-4 h-4" />
+            МФО
+          </TabsTrigger>
           <TabsTrigger value="behavior" className="gap-2">
             <Zap className="w-4 h-4" />
             Поведение
@@ -126,6 +225,251 @@ export default function AssistantSettingsPage() {
             Кнопки
           </TabsTrigger>
         </TabsList>
+
+        {/* МФО */}
+        <TabsContent value="mfo" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>МФО для чата</CardTitle>
+                  <CardDescription>
+                    МФО, которые ассистент будет предлагать пользователям
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setEditingMfo({
+                    id: '',
+                    name: '',
+                    logo: null,
+                    minAmount: 1000,
+                    maxAmount: 30000,
+                    minTerm: 7,
+                    maxTerm: 30,
+                    baseRate: 0.8,
+                    firstLoanRate: null,
+                    decisionTime: 5,
+                    affiliateUrl: null,
+                    features: null,
+                    sortOrder: mfos.length + 1,
+                    isActive: true,
+                  } as Mfo)}
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Добавить МФО
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {mfos.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Нет добавленных МФО. Нажмите "Добавить МФО" чтобы начать.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {mfos.map((mfo) => (
+                    <div
+                      key={mfo.id}
+                      className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                    >
+                      <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                      
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center font-bold text-sm text-emerald-600">
+                        {mfo.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{mfo.name}</span>
+                          {mfo.firstLoanRate === 0 && (
+                            <Badge className="bg-emerald-500">0%</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {mfo.minAmount.toLocaleString()} - {mfo.maxAmount.toLocaleString()} ₽ • {mfo.minTerm}-{mfo.maxTerm} дней • {mfo.baseRate}%/день
+                        </div>
+                      </div>
+                      
+                      {mfo.affiliateUrl && (
+                        <a
+                          href={mfo.affiliateUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                      
+                      <Switch
+                        checked={mfo.isActive}
+                        onCheckedChange={(checked) => toggleMfoActive(mfo.id, checked)}
+                      />
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingMfo(mfo)}
+                      >
+                        Редактировать
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteMfo(mfo.id)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Форма редактирования МФО */}
+          {editingMfo && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingMfo.id ? 'Редактировать МФО' : 'Новое МФО'}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Название</Label>
+                    <Input
+                      value={editingMfo.name}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, name: e.target.value })}
+                      placeholder="Например: Займер"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>URL логотипа</Label>
+                    <Input
+                      value={editingMfo.logo || ''}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, logo: e.target.value })}
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label>Мин. сумма (₽)</Label>
+                    <Input
+                      type="number"
+                      value={editingMfo.minAmount}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, minAmount: parseInt(e.target.value) || 1000 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Макс. сумма (₽)</Label>
+                    <Input
+                      type="number"
+                      value={editingMfo.maxAmount}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, maxAmount: parseInt(e.target.value) || 30000 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Мин. срок (дней)</Label>
+                    <Input
+                      type="number"
+                      value={editingMfo.minTerm}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, minTerm: parseInt(e.target.value) || 7 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Макс. срок (дней)</Label>
+                    <Input
+                      type="number"
+                      value={editingMfo.maxTerm}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, maxTerm: parseInt(e.target.value) || 30 })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Ставка (%/день)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={editingMfo.baseRate}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, baseRate: parseFloat(e.target.value) || 0.8 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Первый займ (%/день)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={editingMfo.firstLoanRate || ''}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, firstLoanRate: e.target.value ? parseFloat(e.target.value) : null })}
+                      placeholder="0 = бесплатно"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Время решения (мин)</Label>
+                    <Input
+                      type="number"
+                      value={editingMfo.decisionTime}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, decisionTime: parseInt(e.target.value) || 5 })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Партнёрская ссылка</Label>
+                  <Input
+                    value={editingMfo.affiliateUrl || ''}
+                    onChange={(e) => setEditingMfo({ ...editingMfo, affiliateUrl: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Особенности (через запятую)</Label>
+                  <Input
+                    value={editingMfo.features || ''}
+                    onChange={(e) => setEditingMfo({ ...editingMfo, features: e.target.value })}
+                    placeholder="Первый займ 0%, Без отказа, Круглосуточно"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={editingMfo.isActive}
+                      onCheckedChange={(checked) => setEditingMfo({ ...editingMfo, isActive: checked })}
+                    />
+                    <Label>Активно</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label>Сортировка:</Label>
+                    <Input
+                      type="number"
+                      className="w-20"
+                      value={editingMfo.sortOrder}
+                      onChange={(e) => setEditingMfo({ ...editingMfo, sortOrder: parseInt(e.target.value) || 1 })}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => saveMfo(editingMfo)}>
+                    Сохранить
+                  </Button>
+                  <Button variant="outline" onClick={() => setEditingMfo(null)}>
+                    Отмена
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         {/* Поведение */}
         <TabsContent value="behavior" className="space-y-6 mt-6">

@@ -960,3 +960,29 @@ model ChatSession {
   @@index([sessionId])
   @@index([createdAt])
 }
+
+// ============================================
+// Assistant MFO (for chat widget)
+// ============================================
+
+model AssistantMfo {
+  id            String   @id @default(cuid())
+  name          String   // Название МФО
+  logo          String?  // URL логотипа
+  minAmount     Int      @default(1000)   // Минимальная сумма
+  maxAmount     Int      @default(30000)  // Максимальная сумма
+  minTerm       Int      @default(7)      // Минимальный срок (дней)
+  maxTerm       Int      @default(30)     // Максимальный срок (дней)
+  baseRate      Float    @default(0.8)    // Ставка в день (%)
+  firstLoanRate Float?   // Ставка для первого займа (0 = бесплатно)
+  decisionTime  Int      @default(5)      // Время решения (минуты)
+  affiliateUrl  String?  // Партнёрская ссылка
+  features      String?  // JSON: ["Первый займ 0%", "Без отказа", ...]
+  sortOrder     Int      @default(10)     // Порядок сортировки
+  isActive      Boolean  @default(true)   // Активно ли в чате
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([isActive])
+  @@index([sortOrder])
+}
