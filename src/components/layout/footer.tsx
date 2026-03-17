@@ -14,9 +14,13 @@ const footerLinks = {
     { href: '#faq', label: 'Вопросы и ответы' },
   ],
   info: [
+    { href: '#faq', label: 'FAQ' },
     { href: '/blog', label: 'Блог' },
-    { href: '#', label: 'Контакты' },
     { href: '#', label: 'О проекте' },
+    { href: '#', label: 'Контакты' },
+    { href: '/zaimy', label: 'Все займы' },
+    { href: '/zaimy/na-kartu', label: 'На карту' },
+    { href: '/zaimy/bez-otkaza', label: 'Без отказа' },
   ],
   legal: [
     { href: '#', label: 'Политика конфиденциальности' },

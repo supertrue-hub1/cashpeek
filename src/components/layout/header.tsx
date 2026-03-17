@@ -14,8 +14,6 @@ interface HeaderProps {
 
 const navLinks = [
   { href: '/sravnit', label: 'Сравнить', icon: Scale },
-  { href: '/blog', label: 'Блог', icon: BookOpen },
-  { href: '#faq', label: 'FAQ', icon: FileText },
 ];
 
 // Первая колонка меню Займы
