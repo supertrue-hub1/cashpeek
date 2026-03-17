@@ -13,8 +13,8 @@ import { scenarios, faqItems } from '@/data/mock-offers';
 import { db } from '@/lib/db';
 import type { Offer } from '@/types/offer';
 
-// Disable cache - always fetch fresh data from DB
-export const revalidate = 0;
+// Кэширование: проверяем каждые 5 минут
+export const revalidate = 300;
 
 // Transform DB offer to frontend Offer type
 function transformOffer(offer: any): Offer {
