@@ -5,12 +5,11 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
-import { AnalyticsProvider } from "@/components/analytics/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap", // Оптимизация загрузки шрифтов
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -94,10 +93,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AnalyticsProvider>
-              {children}
-              <Toaster position="top-right" richColors />
-            </AnalyticsProvider>
+            {children}
+            <Toaster position="top-right" richColors />
           </ThemeProvider>
         </SessionProvider>
       </body>
