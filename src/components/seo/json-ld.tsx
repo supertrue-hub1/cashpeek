@@ -39,6 +39,53 @@ interface LocalBusinessParams {
   population?: number;
 }
 
+interface LocalBusinessSchemaProps {
+  params: LocalBusinessParams;
+}
+
+interface ArticleSchemaProps {
+  title: string;
+  description?: string;
+  image?: string;
+  datePublished?: string | Date;
+  dateModified?: string | Date;
+  author?: {
+    name: string;
+    url?: string;
+  };
+  url?: string;
+}
+
+interface SeoPageSchemasProps {
+  breadcrumbs: BreadcrumbItem[];
+  faqs?: FAQItem[];
+  offers?: OfferSchema[];
+  cityName?: string;
+  citySlug?: string;
+  pageTitle: string;
+  population?: number;
+}
+
+// ============================================
+// JSON-LD Script Component (безопасный рендеринг)
+// ============================================
+
+function escapeJsonLd(json: string): string {
+  return json.replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
+
+function JsonLdScript({ schema }: { schema: object }) {
+  const jsonString = JSON.stringify(schema);
+  const escaped = escapeJsonLd(jsonString);
+  
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: escaped }}
+    />
+  );
+}
+
 // ============================================
 // Organization Schema
 // ============================================
@@ -57,17 +104,10 @@ export function OrganizationSchema() {
       email: SITE_INFO.email,
       availableLanguage: ['Russian'],
     },
-    sameAs: [
-      // Добавьте соцсети при наличии
-    ],
+    sameAs: [],
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
@@ -90,29 +130,17 @@ export function WebSiteSchema() {
     },
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // BreadcrumbList Schema
 // ============================================
 
-interface BreadcrumbSchemaProps {
-  items: BreadcrumbItem[];
-}
-
 export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
-  // Защита от undefined
   const safeItems = items || [];
   
-  if (safeItems.length === 0) {
-    return null;
-  }
+  if (safeItems.length === 0) return null;
   
   const schema = {
     '@context': 'https://schema.org',
@@ -125,29 +153,17 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
     })),
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // FAQPage Schema
 // ============================================
 
-interface FAQSchemaProps {
-  items: FAQItem[];
-}
-
 export function FAQSchema({ items }: FAQSchemaProps) {
-  // Защита от undefined
   const safeItems = items || [];
   
-  if (safeItems.length === 0) {
-    return null;
-  }
+  if (safeItems.length === 0) return null;
   
   const schema = {
     '@context': 'https://schema.org',
@@ -162,21 +178,12 @@ export function FAQSchema({ items }: FAQSchemaProps) {
     })),
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // Product Schema (для оффера МФО)
 // ============================================
-
-interface ProductSchemaProps {
-  offer: OfferSchema;
-}
 
 export function ProductSchema({ offer }: ProductSchemaProps) {
   const schema = {
@@ -208,33 +215,17 @@ export function ProductSchema({ offer }: ProductSchemaProps) {
     }),
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // ItemList Schema (для списка офферов)
 // ============================================
 
-interface OfferListSchemaProps {
-  title?: string;
-  listName?: string;
-  description?: string;
-  offers: OfferSchema[];
-  url?: string;
-}
-
 export function OfferListSchema({ title, listName, description, offers, url }: OfferListSchemaProps) {
-  // Защита от undefined
   const safeOffers = offers || [];
   
-  if (safeOffers.length === 0) {
-    return null;
-  }
+  if (safeOffers.length === 0) return null;
   
   const schema = {
     '@context': 'https://schema.org',
@@ -261,21 +252,12 @@ export function OfferListSchema({ title, listName, description, offers, url }: O
     })),
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // LocalBusiness Schema (для городских страниц)
 // ============================================
-
-interface LocalBusinessSchemaProps {
-  params: LocalBusinessParams;
-}
 
 export function LocalBusinessSchema({ params }: LocalBusinessSchemaProps) {
   const { cityName, citySlug, offersCount, population } = params;
@@ -301,30 +283,12 @@ export function LocalBusinessSchema({ params }: LocalBusinessSchemaProps) {
     priceRange: '₽₽',
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // Article Schema (для блога)
 // ============================================
-
-interface ArticleSchemaProps {
-  title: string;
-  description?: string;
-  image?: string;
-  datePublished?: string | Date;
-  dateModified?: string | Date;
-  author?: {
-    name: string;
-    url?: string;
-  };
-  url?: string;
-}
 
 export function ArticleSchema({
   title,
@@ -361,27 +325,12 @@ export function ArticleSchema({
     },
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
+  return <JsonLdScript schema={schema} />;
 }
 
 // ============================================
 // Combined Schema для SEO-страниц
 // ============================================
-
-interface SeoPageSchemasProps {
-  breadcrumbs: BreadcrumbItem[];
-  faqs?: FAQItem[];
-  offers?: OfferSchema[];
-  cityName?: string;
-  citySlug?: string;
-  pageTitle: string;
-  population?: number;
-}
 
 export function SeoPageSchemas({
   breadcrumbs,
@@ -395,24 +344,13 @@ export function SeoPageSchemas({
   return (
     <>
       <BreadcrumbSchema items={breadcrumbs} />
-      
       {faqs && faqs.length > 0 && <FAQSchema items={faqs} />}
-      
       {offers && offers.length > 0 && (
-        <OfferListSchema
-          title={pageTitle}
-          offers={offers}
-        />
+        <OfferListSchema title={pageTitle} offers={offers} />
       )}
-      
       {cityName && citySlug && (
         <LocalBusinessSchema
-          params={{
-            cityName,
-            citySlug,
-            offersCount: offers?.length || 0,
-            population,
-          }}
+          params={{ cityName, citySlug, offersCount: offers?.length || 0, population }}
         />
       )}
     </>
