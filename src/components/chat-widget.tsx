@@ -1,19 +1,51 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
+interface ChatSettings {
+  assistantName: string;
+  assistantSubtitle: string;
+  primaryColor: string;
+  autoOpenDelay: number;
+  enableSound: boolean;
+  enableAutoOpen: boolean;
+  showQuickActions: boolean;
+  quickActionButtons: { label: string; action: string }[];
+  welcomeMessage: string;
+}
+
+const DEFAULT_WELCOME = `Здравствуйте! 👋
+
+Напишите сумму и срок, например:
+• 10 000 рублей на 2 недели
+• 5 тыс на неделю
+• 30 000 на месяц`;
+
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [settings, setSettings] = useState<ChatSettings | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Загрузка настроек
+  useEffect(() => {
+    fetch('/api/assistant/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(data.settings);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // Прокрутка вниз
   useEffect(() => {
@@ -25,15 +57,20 @@ export function ChatWidget() {
     if (isOpen && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: `Здравствуйте! 👋
-
-Напишите сумму и срок, например:
-• 10 000 рублей на 2 недели
-• 5 тыс на неделю
-• 30 000 на месяц`
+        content: settings?.welcomeMessage || DEFAULT_WELCOME
       }]);
     }
-  }, [isOpen]);
+  }, [isOpen, settings]);
+
+  // Автопоказ подсказки
+  useEffect(() => {
+    if (settings?.enableAutoOpen && settings.autoOpenDelay > 0 && !isOpen) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, settings.autoOpenDelay * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [settings, isOpen]);
 
   // Отправка сообщения
   const sendMessage = async (text?: string) => {
@@ -43,7 +80,6 @@ export function ChatWidget() {
     setInput('');
     setIsLoading(true);
     
-    // Добавляем сообщение пользователя
     setMessages(prev => [...prev, { role: 'user', content: messageText }]);
 
     try {
@@ -64,7 +100,6 @@ export function ChatWidget() {
         throw new Error(data.error || 'Ошибка');
       }
     } catch (error) {
-      console.error('Chat error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: 'Ошибка. Попробуйте ещё раз.' 
@@ -74,18 +109,26 @@ export function ChatWidget() {
     }
   };
 
+  // Цветовая схема
+  const colorClass = settings?.primaryColor === 'blue' ? 'bg-blue-500 hover:bg-blue-600' :
+                     settings?.primaryColor === 'purple' ? 'bg-purple-500 hover:bg-purple-600' :
+                     settings?.primaryColor === 'orange' ? 'bg-orange-500 hover:bg-orange-600' :
+                     'bg-emerald-500 hover:bg-emerald-600';
+
   // Быстрые кнопки
-  const quickActions = [
-    { label: '5 тыс. на неделю', amount: 5000, term: 7 },
-    { label: '10 тыс. на 2 недели', amount: 10000, term: 14 },
-    { label: '15 тыс. на месяц', amount: 15000, term: 30 },
-  ];
+  const quickActions = settings?.quickActionButtons?.length > 0 
+    ? settings.quickActionButtons 
+    : [
+        { label: '5 тыс. на неделю', action: '5000 рублей на 7 дней' },
+        { label: '10 тыс. на 2 недели', action: '10000 рублей на 14 дней' },
+        { label: '15 тыс. на месяц', action: '15000 рублей на 30 дней' },
+      ];
 
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 flex items-center justify-center transition-all hover:scale-110"
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 ${colorClass} text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110`}
       >
         <MessageCircle className="w-6 h-6" />
       </button>
@@ -95,10 +138,15 @@ export function ChatWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 h-[500px] bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
-      <div className="bg-emerald-500 text-white p-4 rounded-t-lg flex items-center justify-between">
-        <div>
-          <h3 className="font-bold">ИИ-ассистент</h3>
-          <p className="text-xs opacity-80">Подбор займов</p>
+      <div className={`${colorClass} text-white p-4 rounded-t-lg flex items-center justify-between`}>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold">{settings?.assistantName || 'ИИ-ассистент'}</h3>
+            <p className="text-xs opacity-80">{settings?.assistantSubtitle || 'Подбор займов'}</p>
+          </div>
         </div>
         <button 
           onClick={() => setIsOpen(false)} 
@@ -118,7 +166,7 @@ export function ChatWidget() {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
                 msg.role === 'user'
-                  ? 'bg-emerald-500 text-white'
+                  ? `${colorClass} text-white`
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
               }`}
             >
@@ -139,13 +187,14 @@ export function ChatWidget() {
       </div>
       
       {/* Quick Actions */}
-      {messages.length <= 2 && (
+      {settings?.showQuickActions !== false && messages.length <= 2 && (
         <div className="px-4 pb-2 flex gap-2 flex-wrap">
           {quickActions.map((action, i) => (
             <button
               key={i}
-              onClick={() => sendMessage(`${action.amount} рублей на ${action.term} дней`)}
-              className="text-xs px-3 py-1.5 border border-emerald-500 text-emerald-600 rounded-full hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+              onClick={() => sendMessage(action.action)}
+              disabled={isLoading}
+              className="text-xs px-3 py-1.5 border border-emerald-500 text-emerald-600 rounded-full hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors disabled:opacity-50"
             >
               {action.label}
             </button>
@@ -173,7 +222,7 @@ export function ChatWidget() {
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-emerald-500 text-white p-2 rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className={`${colorClass} text-white p-2 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity`}
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
