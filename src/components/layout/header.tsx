@@ -187,30 +187,9 @@ export function Header({ className }: HeaderProps) {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex md:items-center md:gap-3">
+          <div className="hidden md:flex md:items-center md:gap-3 ml-auto">
             <SearchBar />
             <ThemeToggle />
-            
-            {session ? (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleLogout}
-                className="text-muted-foreground hover:text-foreground"
-                title="Выйти"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button 
-                variant="outline" 
-                className="border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-                onClick={() => setAuthModalOpen(true)}
-              >
-                <User className="mr-2 h-4 w-4" />
-                Войти
-              </Button>
-            )}
           </div>
 
           {/* Mobile menu button */}
