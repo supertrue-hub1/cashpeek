@@ -20,9 +20,9 @@ const footerLinks = {
     { href: '#', label: 'Контакты' },
   ],
   legal: [
-    { href: '#', label: 'Политика конфиденциальности' },
-    { href: '#', label: 'Пользовательское соглашение' },
-    { href: '#', label: 'Отказ от ответственности' },
+    { href: '/privacy', label: 'Политика конфиденциальности' },
+    { href: '/terms', label: 'Пользовательское соглашение' },
+    { href: '/disclaimer', label: 'Отказ от ответственности' },
     { href: '/complaint/cbrf', label: 'Жалоба в ЦБ РФ' },
   ],
 };
