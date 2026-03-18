@@ -93,23 +93,13 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
-    console.log("PUT /api/offers/[id] - body:", body)
-    console.log("PUT /api/offers/[id] - logo:", body.logo)
-    console.log("PUT /api/offers/[id] - updateData before:", updateData)
-    
     // Build update data only with provided fields
     const updateData: any = {};
     
     // Basic fields from edit form
     if (body.name !== undefined) updateData.name = body.name;
     if (body.slug !== undefined) updateData.slug = body.slug;
-    if (body.logo !== undefined) {
-      console.log("Setting logo:", body.logo);
-      updateData.logo = body.logo || null;
-    }
-    if (body.logo === undefined) {
-      console.log("Logo field is undefined in request, skipping");
-    }
+    if (body.logo !== undefined) updateData.logo = body.logo || null;
     if (body.rating !== undefined) updateData.rating = body.rating;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.isFeatured !== undefined) updateData.isFeatured = body.isFeatured;
