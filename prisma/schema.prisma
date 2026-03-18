@@ -261,6 +261,7 @@ model LoanOffer {
   maxTerm     Int      @default(30)
   baseRate    Float    @default(0.8)
   firstLoanRate Float?
+  psk         Float?   // ПСК в % годовых (редактируемое)
   decisionTime Int     @default(5) // minutes, 0 = instant
   approvalRate Int     @default(90)
   

@@ -78,6 +78,7 @@ const offerFormSchema = z.object({
   maxTerm: z.number().min(0).optional(),
   baseRate: z.number().min(0).optional(),
   firstLoanRate: z.number().min(0).optional(),
+  psk: z.number().min(0).optional(), // ПСК в % годовых
   decisionTime: z.number().min(0).optional(),
   approvalRate: z.number().min(0).max(100).optional(),
   minAge: z.number().min(18).max(100).optional(),
@@ -102,24 +103,6 @@ const offerFormSchema = z.object({
 
 type OfferFormValues = z.infer<typeof offerFormSchema>
 
-interface ApiData {
-  minAmount: number
-  maxAmount: number
-  minTerm: number
-  maxTerm: number
-  baseRate: number
-  firstLoanRate: number
-  decisionTime: number
-  approvalRate: number
-  payoutMethods: string[]
-  features: string[]
-  badCreditOk: boolean
-  noCalls: boolean
-  roundTheClock: boolean
-  minAge: number
-  documents: string[]
-}
-
 interface AdminOffer {
   id: string
   name: string
@@ -132,6 +115,13 @@ interface AdminOffer {
   maxTerm: number
   baseRate: number
   firstLoanRate?: number
+  psk?: number
+  decisionTime: number
+  approvalRate: number
+  minAge: number
+  badCreditOk: boolean
+  noCalls: boolean
+  roundTheClock: boolean
   status: "draft" | "published" | "archived"
   isFeatured: boolean
   isNew: boolean
@@ -152,7 +142,9 @@ interface AdminOffer {
   clicks: number
   conversions: number
   tags?: string[]
-  apiData?: ApiData
+  features?: string[]
+  payoutMethods?: string[]
+  documents?: string[]
 }
 
 const featureLabels: Record<string, string> = {
@@ -201,12 +193,13 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
       maxTerm: offer?.maxTerm || 30,
       baseRate: offer?.baseRate || 0.8,
       firstLoanRate: offer?.firstLoanRate ?? 0,
-      decisionTime: offer?.apiData?.decisionTime || 5,
-      approvalRate: offer?.apiData?.approvalRate || 90,
-      minAge: offer?.apiData?.minAge || 18,
-      badCreditOk: offer?.apiData?.badCreditOk ?? true,
-      noCalls: offer?.apiData?.noCalls ?? true,
-      roundTheClock: offer?.apiData?.roundTheClock ?? false,
+      psk: offer?.psk ?? (offer?.baseRate ? offer.baseRate * 365 : 292),
+      decisionTime: offer?.decisionTime || 5,
+      approvalRate: offer?.approvalRate || 90,
+      minAge: offer?.minAge || 18,
+      badCreditOk: offer?.badCreditOk ?? true,
+      noCalls: offer?.noCalls ?? true,
+      roundTheClock: offer?.roundTheClock ?? false,
       editorNote: offer?.editorNote || "",
       isFeatured: offer?.isFeatured || false,
       isNew: offer?.isNew || false,
@@ -235,12 +228,13 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
         maxTerm: offer.maxTerm || 30,
         baseRate: offer.baseRate || 0.8,
         firstLoanRate: offer.firstLoanRate ?? 0,
-        decisionTime: offer.apiData?.decisionTime || 5,
-        approvalRate: offer.apiData?.approvalRate || 90,
-        minAge: offer.apiData?.minAge || 18,
-        badCreditOk: offer.apiData?.badCreditOk ?? true,
-        noCalls: offer.apiData?.noCalls ?? true,
-        roundTheClock: offer.apiData?.roundTheClock ?? false,
+        psk: offer.psk ?? (offer.baseRate ? offer.baseRate * 365 : 292),
+        decisionTime: offer.decisionTime || 5,
+        approvalRate: offer.approvalRate || 90,
+        minAge: offer.minAge || 18,
+        badCreditOk: offer.badCreditOk ?? true,
+        noCalls: offer.noCalls ?? true,
+        roundTheClock: offer.roundTheClock ?? false,
         editorNote: offer.editorNote || "",
         isFeatured: offer.isFeatured,
         isNew: offer.isNew,
@@ -669,6 +663,28 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           />
                         </div>
 
+                        <FormField
+                          control={form.control}
+                          name="psk"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>ПСК (% годовых)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number"
+                                  step="1"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Полная стоимость кредита. Автоматически: {((form.watch("baseRate") || 0) * 365).toFixed(0)}%
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <div className="grid grid-cols-3 gap-4">
                           <FormField
                             control={form.control}
@@ -723,18 +739,6 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                               </FormItem>
                             )}
                           />
-                        </div>
-
-                        {/* ПСК */}
-                        <div className="rounded-lg bg-muted/50 p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">ПСК (годовых)</span>
-                            <span className="font-medium">
-                              {form.watch("firstLoanRate") === 0 
-                                ? "0%" 
-                                : `до ${((form.watch("baseRate") || 0) * 365).toFixed(0)}%`}
-                            </span>
-                          </div>
                         </div>
                       </div>
 
@@ -1081,7 +1085,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Сумма</span>
                             <span className="font-medium">
-                              {offer.minAmount.toLocaleString()} – {offer.maxAmount.toLocaleString()} ₽
+                              {offer.minAmount?.toLocaleString()} – {offer.maxAmount?.toLocaleString()} ₽
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -1105,16 +1109,16 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Решение</span>
                             <span className="font-medium">
-                              {offer.apiData?.decisionTime === 0 ? "Мгновенно" : `${offer.apiData?.decisionTime || 5} мин`}
+                              {offer.decisionTime === 0 ? "Мгновенно" : `${offer.decisionTime} мин`}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Одобрение</span>
-                            <span className="font-medium">{offer.apiData?.approvalRate || 90}%</span>
+                            <span className="font-medium">{offer.approvalRate}%</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Мин. возраст</span>
-                            <span className="font-medium">{offer.apiData?.minAge || 18} лет</span>
+                            <span className="font-medium">{offer.minAge} лет</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Sync Status</span>
@@ -1125,11 +1129,11 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         </div>
                       </div>
 
-                      {offer.apiData?.features && (
+                      {offer.features && offer.features.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Особенности</div>
                           <div className="flex flex-wrap gap-2">
-                            {offer.apiData.features.map(feature => (
+                            {offer.features.map(feature => (
                               <Badge key={feature} variant="secondary" className="text-xs">
                                 {featureLabels[feature] || feature}
                               </Badge>
@@ -1138,11 +1142,11 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         </div>
                       )}
 
-                      {offer.apiData?.payoutMethods && (
+                      {offer.payoutMethods && offer.payoutMethods.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Способы получения</div>
                           <div className="flex flex-wrap gap-2">
-                            {offer.apiData.payoutMethods.map(method => (
+                            {offer.payoutMethods.map(method => (
                               <Badge key={method} variant="outline" className="text-xs">
                                 {payoutMethodLabels[method] || method}
                               </Badge>

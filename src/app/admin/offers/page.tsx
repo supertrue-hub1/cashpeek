@@ -78,6 +78,13 @@ interface AdminOffer {
   maxTerm: number
   baseRate: number
   firstLoanRate?: number
+  psk?: number
+  decisionTime: number
+  approvalRate: number
+  minAge: number
+  badCreditOk: boolean
+  noCalls: boolean
+  roundTheClock: boolean
   status: "draft" | "published" | "archived"
   isFeatured: boolean
   isNew: boolean
@@ -97,23 +104,9 @@ interface AdminOffer {
   metaDescription?: string
   showOnHomepage: boolean
   sortOrder: number
-  apiData?: {
-    minAmount: number
-    maxAmount: number
-    minTerm: number
-    maxTerm: number
-    baseRate: number
-    firstLoanRate: number
-    decisionTime: number
-    approvalRate: number
-    payoutMethods: string[]
-    features: string[]
-    badCreditOk: boolean
-    noCalls: boolean
-    roundTheClock: boolean
-    minAge: number
-    documents: string[]
-  }
+  features?: string[]
+  payoutMethods?: string[]
+  documents?: string[]
 }
 
 // Хук для debounce
@@ -417,12 +410,15 @@ export default function OffersPage() {
       header: "ПСК",
       cell: ({ row }) => {
         const offer = row.original
+        const psk = offer.psk
         const firstLoanRate = offer.firstLoanRate ?? offer.apiData?.firstLoanRate
         const baseRate = offer.baseRate ?? offer.apiData?.baseRate ?? 0.8
         
-        const psk = firstLoanRate === 0 ? "0%" : `до ${(baseRate * 365).toFixed(0)}%`
+        const pskDisplay = psk 
+          ? `${psk}%` 
+          : (firstLoanRate === 0 ? "0%" : `до ${(baseRate * 365).toFixed(0)}%`)
         return (
-          <span className="text-sm font-medium">{psk}</span>
+          <span className="text-sm font-medium">{pskDisplay}</span>
         )
       },
       size: 80,

@@ -16,6 +16,7 @@ export interface Offer {
   // Ставки
   baseRate: number; // базовая ставка в % в день
   firstLoanRate?: number; // ставка для первого займа (0 = бесплатно)
+  psk?: number; // ПСК в % годовых
   
   // Решение
   decisionTime: number; // время решения в минутах (0 = мгновенно)
