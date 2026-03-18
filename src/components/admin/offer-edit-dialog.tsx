@@ -62,11 +62,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
 import { generateFromTemplate, getAvailableTemplates, type SeoTemplateData } from "@/lib/admin/seo-generator"
+import { LogoUpload } from "@/components/admin/logo-upload"
 
 // Схема валидации
 const offerFormSchema = z.object({
   name: z.string().min(2, "Название должно быть от 2 символов"),
   slug: z.string().min(2, "Slug должен быть от 2 символов").regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
+  logo: z.string().optional().or(z.literal("")),
   rating: z.number().min(0).max(5),
   editorNote: z.string().optional(),
   isFeatured: z.boolean(),
@@ -170,6 +172,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
     defaultValues: {
       name: offer?.name || "",
       slug: offer?.slug || "",
+      logo: offer?.logo || "",
       rating: offer?.rating || 4.5,
       editorNote: offer?.editorNote || "",
       isFeatured: offer?.isFeatured || false,
@@ -191,6 +194,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
       form.reset({
         name: offer.name,
         slug: offer.slug,
+        logo: offer.logo || "",
         rating: offer.rating,
         editorNote: offer.editorNote || "",
         isFeatured: offer.isFeatured,
@@ -303,13 +307,17 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold ${
-                offer.requiresReview 
-                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 ring-2 ring-orange-400" 
-                  : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
-              }`}>
-                {offer.name.substring(0, 2).toUpperCase()}
-              </div>
+              {offer.logo ? (
+                <img src={offer.logo} alt={offer.name} className="w-12 h-12 rounded-lg object-contain" />
+              ) : (
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold ${
+                  offer.requiresReview 
+                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 ring-2 ring-orange-400" 
+                    : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
+                }`}>
+                  {offer.name.substring(0, 2).toUpperCase()}
+                </div>
+              )}
               <div>
                 <DialogTitle className="text-xl">{offer.name}</DialogTitle>
                 <div className="flex items-center gap-2 mt-1">
@@ -409,6 +417,21 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                   {/* Основное */}
                   <TabsContent value="general" className="space-y-4 mt-0">
                     <div className="grid gap-4">
+                      {/* Логотип */}
+                      <FormField
+                        control={form.control}
+                        name="logo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Логотип</FormLabel>
+                            <FormControl>
+                              <LogoUpload value={field.value} onChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       <FormField
                         control={form.control}
                         name="name"
@@ -422,7 +445,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="slug"
