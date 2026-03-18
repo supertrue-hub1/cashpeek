@@ -213,12 +213,14 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
     // Normalize data - editorNote -> customDescription
     const normalizedData = {
       ...data,
+      logo: data.logo || "",
       customDescription: data.customDescription || (data as any).editorNote || "",
       editorNote: undefined,
     }
     delete (normalizedData as any).editorNote
     
-    console.log("Saving offer:", normalizedData)
+    console.log("Saving offer - logo:", normalizedData.logo)
+    console.log("Saving offer - full data:", normalizedData)
     setIsSaving(true)
     try {
       const response = await fetch(`/api/offers/${id}`, {
