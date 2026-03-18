@@ -1,4 +1,9 @@
-:81 {
+# Cashpeek.ru - HTTPS configuration
+# Requires: sudo caddy validate --config /etc/caddy/Caddyfile
+
+cashpeek.ru {
+	encode gzip
+
 	@transform_port_query {
 		query XTransformPort=*
 	}
@@ -26,4 +31,9 @@
 			header_up X-Real-IP {remote_host}
 		}
 	}
+}
+
+# Redirect www to non-www
+www.cashpeek.ru {
+	redir https://cashpeek.ru{uri} permanent
 }
