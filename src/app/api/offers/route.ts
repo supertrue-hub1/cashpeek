@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         slug: body.slug,
+        logo: body.logo || null,
         rating: body.rating || 4.5,
         minAmount: body.minAmount || 1000,
         maxAmount: body.maxAmount || 30000,

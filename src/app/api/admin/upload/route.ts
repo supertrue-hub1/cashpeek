@@ -7,8 +7,9 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const type = formData.get('type') as string || 'blog'; // 'blog' or 'logo'
     
-    console.log('[Upload] Received request, file:', file?.name, 'size:', file?.size, 'type:', file?.type);
+    console.log('[Upload] Received request, file:', file?.name, 'size:', file?.size, 'type:', file?.type, 'uploadType:', type);
     
     if (!file) {
       console.log('[Upload] Error: No file provided');
@@ -16,11 +17,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
       console.log('[Upload] Error: Invalid file type:', file.type);
       return NextResponse.json({ 
-        error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF',
+        error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF, SVG',
         receivedType: file.type
       }, { status: 400 });
     }
@@ -38,9 +39,10 @@ export async function POST(request: NextRequest) {
     // Use /var/www/uploads for production (nginx-served)
     // or public/uploads for development
     const isProduction = process.env.NODE_ENV === 'production';
+    const uploadFolder = type === 'logo' ? 'logos' : 'blog';
     const uploadsDir = isProduction 
-      ? '/var/www/uploads/blog'
-      : path.join(process.cwd(), 'public', 'uploads', 'blog');
+      ? `/var/www/uploads/${uploadFolder}`
+      : path.join(process.cwd(), 'public', 'uploads', uploadFolder);
     
     console.log('[Upload] Uploads directory:', uploadsDir, '(production:', isProduction, ')');
     
@@ -57,7 +59,8 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const filename = `blog-${timestamp}-${randomStr}.${ext}`;
+    const prefix = type === 'logo' ? 'logo' : 'blog';
+    const filename = `${prefix}-${timestamp}-${randomStr}.${ext}`;
     
     // Write file
     const bytes = await file.arrayBuffer();
@@ -69,7 +72,7 @@ export async function POST(request: NextRequest) {
     console.log('[Upload] File written successfully');
 
     // Return public URL
-    const url = `/uploads/blog/${filename}`;
+    const url = `/uploads/${uploadFolder}/${filename}`;
 
     return NextResponse.json({ 
       success: true,

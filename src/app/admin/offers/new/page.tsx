@@ -9,11 +9,7 @@ import { z } from "zod"
 import {
   ArrowLeft,
   Save,
-  Eye,
   Loader2,
-  Sparkles,
-  Plus,
-  X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -41,6 +37,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { LogoUpload } from "@/components/admin/logo-upload"
 import { toast } from "sonner"
 
 // Схема валидации
@@ -48,6 +45,7 @@ const offerFormSchema = z.object({
   // Основное
   name: z.string().min(2, "Название должно быть от 2 символов"),
   slug: z.string().min(2, "Slug должен быть от 2 символов").regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
+  logo: z.string().optional().or(z.literal("")),
   rating: z.number().min(0).max(5),
   
   // Условия займа
@@ -116,6 +114,7 @@ export default function NewOfferPage() {
     defaultValues: {
       name: "",
       slug: "",
+      logo: "",
       rating: 4.5,
       minAmount: 1000,
       maxAmount: 30000,
@@ -165,6 +164,7 @@ export default function NewOfferPage() {
           features,
           payoutMethods,
           documents: ["passport"],
+          logo: data.logo || null,
         }),
       })
 
@@ -262,6 +262,23 @@ export default function NewOfferPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="logo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Логотип</FormLabel>
+                        <FormControl>
+                          <LogoUpload
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
