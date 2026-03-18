@@ -188,7 +188,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
           </div>
 
           {/* Main terms */}
-          <div className="mb-4 grid grid-cols-2 gap-3">
+          <div className="mb-4 grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-muted/50 p-3">
               <div className="text-xs text-muted-foreground mb-1">Сумма</div>
               <div className="font-semibold text-sm text-foreground">
@@ -198,7 +198,13 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             <div className="rounded-xl bg-muted/50 p-3">
               <div className="text-xs text-muted-foreground mb-1">Срок</div>
               <div className="font-semibold text-sm text-foreground">
-                {offer.minTerm} – {offer.maxTerm} дней
+                {offer.minTerm} – {offer.maxTerm} дн.
+              </div>
+            </div>
+            <div className="rounded-xl bg-muted/50 p-3">
+              <div className="text-xs text-muted-foreground mb-1">ПСК</div>
+              <div className="font-semibold text-sm text-foreground">
+                {offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`}
               </div>
             </div>
           </div>
