@@ -340,9 +340,9 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 </div>
                 <div className="bg-muted/50 rounded-xl p-3 text-center">
                   <Percent className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <div className="text-xs text-muted-foreground">Ставка</div>
-                  <div className="font-semibold text-sm text-green-600">
-                    {offer.firstLoanRate === 0 ? '0%' : 'от 0.8%'}
+                  <div className="text-xs text-muted-foreground">ПСК</div>
+                  <div className="font-semibold text-sm">
+                    {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
                   </div>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-3 text-center">
@@ -430,6 +430,12 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">Базовая ставка</span>
                   <span className="font-medium">{offer.baseRate}% в день</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">ПСК (полная стоимость)</span>
+                  <span className="font-medium">
+                    {offer.psk ? `${offer.psk}% годовых` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}% годовых`)}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">Время решения</span>
