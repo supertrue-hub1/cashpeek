@@ -113,6 +113,29 @@ export async function PUT(
     if (body.customDescription !== undefined) updateData.customDescription = body.customDescription;
     if (body.editorNote !== undefined) updateData.customDescription = body.editorNote;
     
+    // Loan terms
+    if (body.minAmount !== undefined) updateData.minAmount = body.minAmount;
+    if (body.maxAmount !== undefined) updateData.maxAmount = body.maxAmount;
+    if (body.minTerm !== undefined) updateData.minTerm = body.minTerm;
+    if (body.maxTerm !== undefined) updateData.maxTerm = body.maxTerm;
+    if (body.baseRate !== undefined) updateData.baseRate = body.baseRate;
+    if (body.firstLoanRate !== undefined) updateData.firstLoanRate = body.firstLoanRate;
+    
+    // Update apiData with new values
+    const currentApiData = offer.apiData || {};
+    const updatedApiData = { ...currentApiData };
+    
+    if (body.decisionTime !== undefined) updatedApiData.decisionTime = body.decisionTime;
+    if (body.approvalRate !== undefined) updatedApiData.approvalRate = body.approvalRate;
+    if (body.minAge !== undefined) updatedApiData.minAge = body.minAge;
+    if (body.badCreditOk !== undefined) updatedApiData.badCreditOk = body.badCreditOk;
+    if (body.noCalls !== undefined) updatedApiData.noCalls = body.noCalls;
+    if (body.roundTheClock !== undefined) updatedApiData.roundTheClock = body.roundTheClock;
+    
+    if (Object.keys(updatedApiData).length > 0) {
+      updateData.apiData = updatedApiData;
+    }
+    
     // Reset review flag after update
     updateData.requiresReview = false;
     updateData.reviewReason = null;

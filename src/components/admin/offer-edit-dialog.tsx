@@ -70,6 +70,23 @@ const offerFormSchema = z.object({
   slug: z.string().min(2, "Slug должен быть от 2 символов").regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
   logo: z.string().optional().or(z.literal("")),
   rating: z.number().min(0).max(5),
+  
+  // Условия займа
+  minAmount: z.number().min(0).optional(),
+  maxAmount: z.number().min(0).optional(),
+  minTerm: z.number().min(0).optional(),
+  maxTerm: z.number().min(0).optional(),
+  baseRate: z.number().min(0).optional(),
+  firstLoanRate: z.number().min(0).optional(),
+  decisionTime: z.number().min(0).optional(),
+  approvalRate: z.number().min(0).max(100).optional(),
+  minAge: z.number().min(18).max(100).optional(),
+  
+  // Особенности
+  badCreditOk: z.boolean().optional(),
+  noCalls: z.boolean().optional(),
+  roundTheClock: z.boolean().optional(),
+  
   editorNote: z.string().optional(),
   isFeatured: z.boolean(),
   isNew: z.boolean(),
@@ -122,6 +139,10 @@ interface AdminOffer {
   affiliateUrl: string
   editorNote?: string
   customDescription?: string
+  metaTitle?: string
+  metaDescription?: string
+  showOnHomepage: boolean
+  sortOrder: number
   syncStatus: "synced" | "pending" | "error"
   syncSource: string
   lastSync: string
@@ -174,6 +195,18 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
       slug: offer?.slug || "",
       logo: offer?.logo || "",
       rating: offer?.rating || 4.5,
+      minAmount: offer?.minAmount || 1000,
+      maxAmount: offer?.maxAmount || 30000,
+      minTerm: offer?.minTerm || 1,
+      maxTerm: offer?.maxTerm || 30,
+      baseRate: offer?.baseRate || 0.8,
+      firstLoanRate: offer?.firstLoanRate ?? 0,
+      decisionTime: offer?.apiData?.decisionTime || 5,
+      approvalRate: offer?.apiData?.approvalRate || 90,
+      minAge: offer?.apiData?.minAge || 18,
+      badCreditOk: offer?.apiData?.badCreditOk ?? true,
+      noCalls: offer?.apiData?.noCalls ?? true,
+      roundTheClock: offer?.apiData?.roundTheClock ?? false,
       editorNote: offer?.editorNote || "",
       isFeatured: offer?.isFeatured || false,
       isNew: offer?.isNew || false,
@@ -196,6 +229,18 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
         slug: offer.slug,
         logo: offer.logo || "",
         rating: offer.rating,
+        minAmount: offer.minAmount || 1000,
+        maxAmount: offer.maxAmount || 30000,
+        minTerm: offer.minTerm || 1,
+        maxTerm: offer.maxTerm || 30,
+        baseRate: offer.baseRate || 0.8,
+        firstLoanRate: offer.firstLoanRate ?? 0,
+        decisionTime: offer.apiData?.decisionTime || 5,
+        approvalRate: offer.apiData?.approvalRate || 90,
+        minAge: offer.apiData?.minAge || 18,
+        badCreditOk: offer.apiData?.badCreditOk ?? true,
+        noCalls: offer.apiData?.noCalls ?? true,
+        roundTheClock: offer.apiData?.roundTheClock ?? false,
         editorNote: offer.editorNote || "",
         isFeatured: offer.isFeatured,
         isNew: offer.isNew,
@@ -496,6 +541,268 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                                 />
                               </FormControl>
                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <Separator />
+
+                      {/* Условия займа */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Условия займа</h4>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="minAmount"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Мин. сумма (₽)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="maxAmount"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Макс. сумма (₽)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="minTerm"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Мин. срок (дней)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="maxTerm"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Макс. срок (дней)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="baseRate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ставка (%/день)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    step="0.1"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="firstLoanRate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Первый займ (%)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    step="0.1"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormDescription>0 = бесплатно</FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="decisionTime"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Решение (мин)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="approvalRate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Одобрение (%)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="minAge"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Мин. возраст</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* ПСК */}
+                        <div className="rounded-lg bg-muted/50 p-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">ПСК (годовых)</span>
+                            <span className="font-medium">
+                              {form.watch("firstLoanRate") === 0 
+                                ? "0%" 
+                                : `до ${((form.watch("baseRate") || 0) * 365).toFixed(0)}%`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Особенности */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Особенности</h4>
+                        
+                        <FormField
+                          control={form.control}
+                          name="badCreditOk"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-sm">Плохая КИ</FormLabel>
+                                <FormDescription className="text-xs">
+                                  Одобряют с плохой кредитной историей
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="noCalls"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-sm">Без звонков</FormLabel>
+                                <FormDescription className="text-xs">
+                                  Не звонят клиентам
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="roundTheClock"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-sm">Круглосуточно</FormLabel>
+                                <FormDescription className="text-xs">
+                                  Работает 24/7
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
                             </FormItem>
                           )}
                         />

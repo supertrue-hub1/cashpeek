@@ -413,6 +413,21 @@ export default function OffersPage() {
       size: 100,
     },
     {
+      id: "psk",
+      header: "ПСК",
+      cell: ({ row }) => {
+        const offer = row.original
+        const firstLoanRate = offer.firstLoanRate ?? offer.apiData?.firstLoanRate
+        const baseRate = offer.baseRate ?? offer.apiData?.baseRate ?? 0.8
+        
+        const psk = firstLoanRate === 0 ? "0%" : `до ${(baseRate * 365).toFixed(0)}%`
+        return (
+          <span className="text-sm font-medium">{psk}</span>
+        )
+      },
+      size: 80,
+    },
+    {
       accessorKey: "isFeatured",
       header: "Featured",
       cell: ({ row }) => {
