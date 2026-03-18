@@ -93,6 +93,9 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
+    console.log("PUT /api/offers/[id] - body:", body)
+    console.log("PUT /api/offers/[id] - logo:", body.logo)
+    
     // Build update data only with provided fields
     const updateData: any = {};
     

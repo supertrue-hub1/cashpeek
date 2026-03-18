@@ -565,6 +565,9 @@ export default function OffersPage() {
   const handleOfferSave = async (data: any) => {
     if (!selectedOffer) return
     
+    console.log("handleOfferSave - received data:", data)
+    console.log("handleOfferSave - logo:", data.logo)
+    
     try {
       const response = await fetch(`/api/offers/${selectedOffer.id}`, {
         method: 'PUT',
