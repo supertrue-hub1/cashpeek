@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+// Admin credentials
+const ADMIN_EMAIL = 'admin@cashpeek.ru';
+const ADMIN_PASSWORD = '546815hH';
+const ADMIN_NAME = 'Administrator';
 
 const offers = [
   {
@@ -231,6 +237,36 @@ const offers = [
 
 async function main() {
   console.log('Start seeding...');
+
+  // Create admin user
+  console.log('\n🔐 Creating admin user...');
+  const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: ADMIN_EMAIL },
+  });
+
+  if (existingAdmin) {
+    await prisma.user.update({
+      where: { email: ADMIN_EMAIL },
+      data: {
+        password: hashedPassword,
+        role: 'admin',
+        name: ADMIN_NAME,
+      },
+    });
+    console.log(`✅ Admin updated: ${ADMIN_EMAIL}`);
+  } else {
+    await prisma.user.create({
+      data: {
+        email: ADMIN_EMAIL,
+        password: hashedPassword,
+        name: ADMIN_NAME,
+        role: 'admin',
+      },
+    });
+    console.log(`✅ Admin created: ${ADMIN_EMAIL}`);
+  }
 
   // Clear existing offers
   await prisma.loanOffer.deleteMany({});
