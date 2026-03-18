@@ -329,8 +329,21 @@ export default function OffersPage() {
       accessorKey: "logo",
       header: "",
       cell: ({ row }) => {
+        const logo = row.original.logo
         const name = row.original.name
         const requiresReview = row.original.requiresReview
+        
+        // Если есть лого - показываем изображение
+        if (logo) {
+          return (
+            <img 
+              src={logo} 
+              alt={name}
+              className="w-10 h-10 rounded-lg object-contain bg-white"
+            />
+          )
+        }
+        
         return (
           <div 
             className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${
@@ -564,9 +577,6 @@ export default function OffersPage() {
   // Обработчик сохранения оффера
   const handleOfferSave = async (data: any) => {
     if (!selectedOffer) return
-    
-    console.log("handleOfferSave - received data:", data)
-    console.log("handleOfferSave - logo:", data.logo)
     
     try {
       const response = await fetch(`/api/offers/${selectedOffer.id}`, {
