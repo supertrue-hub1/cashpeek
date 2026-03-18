@@ -215,6 +215,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
 
   const onSubmit = async (data: OfferFormValues) => {
     console.log("Form onSubmit called with data:", data)
+    console.log("Logo value in form:", data.logo)
     setIsSaving(true)
     try {
       if (onSave) {
