@@ -38,7 +38,7 @@ const featureLabels: Record<OfferFeature, { label: string; variant: 'default' | 
 };
 
 // MFO Logo component
-function MFOLogo({ name, className }: { name: string; className?: string }) {
+function MFOLogo({ name, logo, className }: { name: string; logo?: string; className?: string }) {
   const colors: Record<string, string> = {
     'Займер': 'bg-gradient-to-br from-blue-500 to-blue-600',
     'MoneyMan': 'bg-gradient-to-br from-green-500 to-green-600',
@@ -51,6 +51,17 @@ function MFOLogo({ name, className }: { name: string; className?: string }) {
   };
   const bgColor = colors[name] || 'bg-gradient-to-br from-slate-500 to-slate-600';
   const initials = name.slice(0, 2).toUpperCase();
+
+  // Если есть logo - показываем изображение
+  if (logo) {
+    return (
+      <img 
+        src={logo} 
+        alt={name} 
+        className={cn('rounded-xl object-contain bg-white', className)}
+      />
+    );
+  }
 
   return (
     <div className={cn('flex items-center justify-center rounded-xl text-white font-bold', bgColor, className)}>
@@ -156,7 +167,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
           {/* Header: Logo, Name, Rating */}
           <div className="mb-4 flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <MFOLogo name={offer.name} className="h-12 w-12 text-lg" />
+              <MFOLogo name={offer.name} logo={offer.logo} className="h-12 w-12 text-lg" />
               <div>
                 <h3 className="font-semibold text-base text-foreground">{offer.name}</h3>
                 <div className="flex items-center gap-1">
@@ -289,7 +300,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <MFOLogo name={offer.name} className="h-16 w-16 text-xl" />
+              <MFOLogo name={offer.name} logo={offer.logo} className="h-16 w-16 text-xl" />
               <div>
                 <DialogTitle className="text-xl">{offer.name}</DialogTitle>
                 <div className="flex items-center gap-2 mt-1">
