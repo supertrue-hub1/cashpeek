@@ -17,6 +17,10 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
   const [isDragging, setIsDragging] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
+  React.useEffect(() => {
+    console.log("LogoUpload - value prop:", value)
+  }, [value])
+
   const handleFile = async (file: File) => {
     // Validate
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']
@@ -40,6 +44,8 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
       formData.append("file", file)
       formData.append("type", "logo")
 
+      console.log("Uploading logo file:", file.name)
+      
       const response = await fetch("/api/admin/upload", {
         method: "POST",
         body: formData,
@@ -51,12 +57,14 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
       }
 
       const data = await response.json()
+      console.log("Logo uploaded, URL:", data.url)
       onChange(data.url)
       
       toast.success("Логотип загружен", {
         description: data.url
       })
     } catch (error) {
+      console.error("Logo upload error:", error)
       toast.error("Ошибка загрузки", {
         description: error instanceof Error ? error.message : "Не удалось загрузить"
       })
@@ -79,6 +87,7 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
   }
 
   const handleRemove = () => {
+    console.log("LogoUpload handleRemove called")
     onChange("")
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
