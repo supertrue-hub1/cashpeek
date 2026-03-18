@@ -210,6 +210,7 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
   const onSubmit = async (data: OfferFormValues) => {
     if (!id) return
     
+    console.log("Saving offer:", data)
     setIsSaving(true)
     try {
       const response = await fetch(`/api/offers/${id}`, {
@@ -218,15 +219,22 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
         body: JSON.stringify(data),
       })
 
+      console.log("Response status:", response.status)
+      
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Failed to save")
+        console.error("API error:", error)
+        throw new Error(error.error || error.details || "Failed to save")
       }
 
+      const result = await response.json()
+      console.log("Saved successfully:", result)
+      
       toast.success("Сохранено", {
         description: `Оффер "${data.name}" обновлён`,
       })
     } catch (error) {
+      console.error("Save error:", error)
       toast.error("Ошибка сохранения", {
         description: error instanceof Error ? error.message : "Не удалось сохранить",
       })
@@ -304,7 +312,7 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
               )
             }}
           />
-          <Button size="sm" onClick={form.handleSubmit(onSubmit)} disabled={isSaving}>
+          <Button size="sm" type="submit" form="offer-form" disabled={isSaving}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
             Сохранить
@@ -327,7 +335,7 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form id="offer-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="general">Основное</TabsTrigger>
