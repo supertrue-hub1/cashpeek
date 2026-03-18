@@ -8,10 +8,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const featured = searchParams.get('featured');
     const limit = searchParams.get('limit');
+    const id = searchParams.get('id');
 
     const where: any = {};
     
-    if (status && status !== 'all') {
+    if (id) {
+      where.id = id;
+    } else if (status && status !== 'all') {
       where.status = status;
     }
 

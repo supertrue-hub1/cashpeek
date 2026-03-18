@@ -99,6 +99,7 @@ export async function PUT(
     // Basic fields from edit form
     if (body.name !== undefined) updateData.name = body.name;
     if (body.slug !== undefined) updateData.slug = body.slug;
+    if (body.logo !== undefined) updateData.logo = body.logo || null;
     if (body.rating !== undefined) updateData.rating = body.rating;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.isFeatured !== undefined) updateData.isFeatured = body.isFeatured;
