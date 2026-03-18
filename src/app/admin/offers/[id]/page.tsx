@@ -210,13 +210,21 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
   const onSubmit = async (data: OfferFormValues) => {
     if (!id) return
     
-    console.log("Saving offer:", data)
+    // Normalize data - editorNote -> customDescription
+    const normalizedData = {
+      ...data,
+      customDescription: data.customDescription || (data as any).editorNote || "",
+      editorNote: undefined,
+    }
+    delete (normalizedData as any).editorNote
+    
+    console.log("Saving offer:", normalizedData)
     setIsSaving(true)
     try {
       const response = await fetch(`/api/offers/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(normalizedData),
       })
 
       console.log("Response status:", response.status)
