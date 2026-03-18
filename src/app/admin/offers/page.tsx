@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -666,6 +667,12 @@ export default function OffersPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button asChild size="sm">
+            <Link href="/admin/offers/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Добавить оффер
+            </Link>
+          </Button>
           <Button variant="outline" size="sm" onClick={fetchOffers} disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Обновить
