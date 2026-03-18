@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'CashPeek';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru';
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@cashpeek.ru';
+const SITE_NAME = 'CashPeek';
+const SITE_URL = 'https://cashpeek.ru';
+const SUPPORT_EMAIL = 'support@cashpeek.ru';
 const LAST_UPDATED = '15 января 2025 г.';
 
 // Schema.org разметка
@@ -43,6 +43,19 @@ export default function PrivacyPage() {
       />
       
       <LegalPage title="Политика конфиденциальности" lastUpdated={LAST_UPDATED}>
+        {/* Breadcrumbs */}
+        <nav className="text-sm text-muted-foreground mb-8 not-prose">
+          <ol className="flex items-center gap-2">
+            <li>
+              <Link href="/" className="hover:text-primary transition-colors">
+                Главная
+              </Link>
+            </li>
+            <li className="text-muted-foreground/50">/</li>
+            <li className="text-foreground font-medium">Политика конфиденциальности</li>
+          </ol>
+        </nav>
+
         {/* Раздел 1 */}
         <LegalSection number="1" title="Общие положения">
           <LegalParagraph number="1.1.">

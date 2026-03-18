@@ -81,10 +81,10 @@ export function TrustDisclaimer() {
                 <p className="text-sm text-muted-foreground">
                   По вопросам работы сервиса обращайтесь:{' '}
                   <a 
-                    href={`mailto:${process.env.NEXT_PUBLIC_SITE_EMAIL || 'support@cashpeek.ru'}`}
+                    href="mailto:support@cashpeek.ru"
                     className="text-primary hover:underline"
                   >
-                    {process.env.NEXT_PUBLIC_SITE_EMAIL || 'support@cashpeek.ru'}
+                    support@cashpeek.ru
                   </a>
                 </p>
               </div>

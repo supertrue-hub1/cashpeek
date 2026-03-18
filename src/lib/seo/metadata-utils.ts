@@ -12,8 +12,8 @@ export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru
 export const SITE_INFO = {
   name: 'CashPeek',
   domain: 'cashpeek.ru',
-  email: process.env.NEXT_PUBLIC_SITE_EMAIL || 'support@cashpeek.ru',
-  phone: process.env.NEXT_PUBLIC_SITE_PHONE,
+  email: 'support@cashpeek.ru',
+  phone: undefined,
 } as const;
 
 /**

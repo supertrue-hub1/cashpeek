@@ -91,11 +91,11 @@ export function Footer({ className }: FooterProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4 text-muted-foreground/60" />
               <a 
-                href={`mailto:${COMPANY_INFO.email}`} 
+                href="mailto:support@cashpeek.ru" 
                 className="hover:text-primary transition-colors"
                 itemProp="email"
               >
-                {COMPANY_INFO.email}
+                support@cashpeek.ru
               </a>
             </div>
           </div>
@@ -170,32 +170,14 @@ export function Footer({ className }: FooterProps) {
 
         {/* Legal info block - Реквизиты */}
         <div className="mb-6 rounded-xl bg-muted/50 p-4 border border-border/50">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            {/* Company info */}
-            <div className="flex items-start gap-2">
-              <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 mt-0.5" />
-              <div className="text-[11px] text-muted-foreground/70 leading-relaxed">
-                <span itemProp="name" className="font-medium">{COMPANY_INFO.name}</span>
-                <span className="mx-1.5">•</span>
-                <span>ОГРНИП: <span itemProp="identifier">{COMPANY_INFO.ogrnip}</span></span>
-                <span className="mx-1.5">•</span>
-                <span>ИНН: <span itemProp="taxID">{COMPANY_INFO.inn}</span></span>
-              </div>
-            </div>
-            
-            {/* Links */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground/60">
-              <Link href="/privacy" className="hover:text-primary transition-colors">
-                Конфиденциальность
-              </Link>
-              <span>•</span>
-              <Link href="/terms" className="hover:text-primary transition-colors">
-                Соглашение
-              </Link>
-              <span>•</span>
-              <Link href="/disclaimer" className="hover:text-primary transition-colors">
-                Отказ от ответственности
-              </Link>
+          <div className="flex items-start gap-2">
+            <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 mt-0.5" />
+            <div className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              <span itemProp="name" className="font-medium">{COMPANY_INFO.name}</span>
+              <span className="mx-1.5">•</span>
+              <span>ОГРНИП: <span itemProp="identifier">{COMPANY_INFO.ogrnip}</span></span>
+              <span className="mx-1.5">•</span>
+              <span>ИНН: <span itemProp="taxID">{COMPANY_INFO.inn}</span></span>
             </div>
           </div>
         </div>

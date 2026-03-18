@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, X, CreditCard, Scale, Sun, Moon, ChevronDown, Smartphone, CreditCard as CardIcon, CheckCircle, AlertCircle, Percent, LogOut, User, Home, Users, Clock, GraduationCap, Calendar } from 'lucide-react';
+import { Menu, X, CreditCard, Scale, Sun, Moon, ChevronDown, Smartphone, CreditCard as CardIcon, CheckCircle, AlertCircle, Percent, LogOut, User, Home, Users, Clock, GraduationCap, Calendar, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AuthModal } from '@/components/auth/auth-modal';
@@ -15,6 +15,7 @@ interface HeaderProps {
 
 const navLinks = [
   { href: '/sravnit', label: 'Сравнить', icon: Scale },
+  { href: '/rating', label: 'Рейтинг', icon: Trophy },
 ];
 
 // Первая колонка меню Займы

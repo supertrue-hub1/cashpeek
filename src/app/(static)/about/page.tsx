@@ -332,27 +332,6 @@ export default function AboutPage() {
                 (152-ФЗ) и не передаём информацию третьим лицам без вашего согласия.
               </p>
             </div>
-
-            <div className="flex flex-wrap gap-4 mt-6">
-              <Link 
-                href="/privacy" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
-              >
-                Политика конфиденциальности
-              </Link>
-              <Link 
-                href="/terms" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
-              >
-                Пользовательское соглашение
-              </Link>
-              <Link 
-                href="/disclaimer" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
-              >
-                Отказ от ответственности
-              </Link>
-            </div>
           </div>
         </section>
 
