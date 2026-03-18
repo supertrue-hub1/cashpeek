@@ -189,28 +189,28 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
 
           {/* Main terms */}
           <div className="mb-3 grid grid-cols-3 gap-2">
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-[10px] text-muted-foreground mb-0.5">Сумма</div>
-              <div className="font-semibold text-xs text-foreground">
+            <div className="rounded-lg bg-muted/50 p-2.5">
+              <div className="text-xs text-muted-foreground mb-0.5">Сумма</div>
+              <div className="font-semibold text-sm text-foreground">
                 {formatAmount(offer.minAmount)} – {formatAmount(offer.maxAmount)} ₽
               </div>
             </div>
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-[10px] text-muted-foreground mb-0.5">Срок</div>
-              <div className="font-semibold text-xs text-foreground">
+            <div className="rounded-lg bg-muted/50 p-2.5">
+              <div className="text-xs text-muted-foreground mb-0.5">Срок</div>
+              <div className="font-semibold text-sm text-foreground">
                 {offer.minTerm} – {offer.maxTerm} дн.
               </div>
             </div>
-            <div className="rounded-lg bg-muted/50 p-2">
-              <div className="text-[10px] text-muted-foreground mb-0.5">ПСК</div>
-              <div className="font-semibold text-xs text-foreground">
+            <div className="rounded-lg bg-muted/50 p-2.5">
+              <div className="text-xs text-muted-foreground mb-0.5">ПСК</div>
+              <div className="font-semibold text-sm text-foreground">
                 {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
               </div>
             </div>
           </div>
 
           {/* Decision time */}
-          <div className="mb-3 flex items-center gap-2 text-xs">
+          <div className="mb-3 flex items-center gap-2 text-sm">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-muted-foreground">Решение:</span>
             <span className="font-medium text-foreground">{formatDecisionTime(offer.decisionTime)}</span>
@@ -229,7 +229,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 return (
                   <Badge
                     key={feature}
-                    className="bg-primary text-primary-foreground text-[10px] border-0"
+                    className="bg-primary text-primary-foreground text-xs border-0"
                   >
                     {config.label}
                   </Badge>
@@ -237,7 +237,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               }
               
               return (
-                <Badge key={feature} variant={config.variant} className="text-[10px] bg-muted text-muted-foreground border-0">
+                <Badge key={feature} variant={config.variant} className="text-xs bg-muted text-muted-foreground border-0">
                   {config.label}
                 </Badge>
               );
@@ -247,26 +247,26 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
           {/* Quick icons for conditions */}
           <div className="mb-3 flex gap-2 text-muted-foreground">
             {offer.badCreditOk && (
-              <div className="flex items-center gap-1 text-[10px]" title="Подходит для плохой КИ">
-                <ShieldCheck className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs" title="Подходит для плохой КИ">
+                <ShieldCheck className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Плохая КИ</span>
               </div>
             )}
             {offer.noCalls && (
-              <div className="flex items-center gap-1 text-[10px]" title="Без звонков">
-                <PhoneOff className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs" title="Без звонков">
+                <PhoneOff className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Без звонков</span>
               </div>
             )}
             {offer.roundTheClock && (
-              <div className="flex items-center gap-1 text-[10px]" title="Круглосуточно">
-                <Moon className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs" title="Круглосуточно">
+                <Moon className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">24/7</span>
               </div>
             )}
             {payoutMethods.includes('card') && (
-              <div className="flex items-center gap-1 text-[10px]" title="На карту">
-                <CreditCard className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs" title="На карту">
+                <CreditCard className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">На карту</span>
               </div>
             )}
