@@ -988,6 +988,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                       </CardHeader>
                       <CardContent className="grid grid-cols-2 gap-2">
                         <Button 
+                          type="button"
                           variant="outline" 
                           size="sm"
                           onClick={() => handleGenerateDescription("description")}
@@ -996,6 +997,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           Описание
                         </Button>
                         <Button 
+                          type="button"
                           variant="outline" 
                           size="sm"
                           onClick={() => handleGenerateDescription("shortDescription")}
@@ -1004,6 +1006,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           Краткое
                         </Button>
                         <Button 
+                          type="button"
                           variant="outline" 
                           size="sm"
                           onClick={() => handleGenerateDescription("metaTitle")}
@@ -1012,6 +1015,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           Meta Title
                         </Button>
                         <Button 
+                          type="button"
                           variant="outline" 
                           size="sm"
                           onClick={() => handleGenerateDescription("metaDescription")}
