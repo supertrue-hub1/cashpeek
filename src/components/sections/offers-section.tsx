@@ -1,6 +1,9 @@
 import * as React from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { OffersGrid } from '@/components/offers';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import type { Offer } from '@/types/offer';
 
 interface OffersSectionProps {
@@ -9,6 +12,7 @@ interface OffersSectionProps {
   title?: string;
   description?: string;
   showMore?: boolean;
+  showAllLink?: boolean;
   id?: string;
 }
 
@@ -18,6 +22,7 @@ export function OffersSection({
   title = 'Лучшие предложения',
   description = 'Проверенные МФО с высоким процентом одобрения',
   showMore = false,
+  showAllLink = false,
   id = 'offers',
 }: OffersSectionProps) {
   return (
@@ -34,6 +39,18 @@ export function OffersSection({
           offers={offers}
           featuredIds={offers.filter((o) => o.isFeatured).map((o) => o.id)}
         />
+
+        {/* Show all link button */}
+        {showAllLink && (
+          <div className="mt-8 text-center">
+            <Button asChild size="lg" variant="outline" className="gap-2">
+              <Link href="/mfo">
+                Все предложения
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        )}
 
         {/* Show more button */}
         {showMore && offers.length > 6 && (

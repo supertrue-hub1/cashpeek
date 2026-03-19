@@ -34,6 +34,7 @@ export function RatingTable({ mfoList }: RatingTableProps) {
   } = useRatingStore();
 
   const [showFilters, setShowFilters] = React.useState(false);
+  const [limit, setLimit] = React.useState(21);
 
   // Сортировка и фильтрация
   const filteredAndSortedMfo = React.useMemo(() => {
@@ -78,6 +79,15 @@ export function RatingTable({ mfoList }: RatingTableProps) {
 
     return result;
   }, [mfoList, sortBy, showOnlyVerified, searchQuery, getMfoPeopleRating, getMfoReviews]);
+
+  // Visible items with pagination
+  const visibleMfo = filteredAndSortedMfo.slice(0, limit);
+  const hasMore = limit < filteredAndSortedMfo.length;
+  const remaining = filteredAndSortedMfo.length - limit;
+
+  const handleShowMore = () => {
+    setLimit(prev => prev + 21);
+  };
 
   return (
     <section className="py-12 sm:py-16">
@@ -173,7 +183,7 @@ export function RatingTable({ mfoList }: RatingTableProps) {
         {/* MFO List */}
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {filteredAndSortedMfo.map((mfo, index) => (
+            {visibleMfo.map((mfo, index) => (
               <motion.div
                 key={mfo.id}
                 layout
@@ -191,6 +201,23 @@ export function RatingTable({ mfoList }: RatingTableProps) {
               </motion.div>
             ))}
           </AnimatePresence>
+
+          {/* Show More Button */}
+          {hasMore && (
+            <div className="text-center pt-6">
+              <Button
+                onClick={handleShowMore}
+                variant="outline"
+                size="lg"
+                className="gap-2"
+              >
+                Показать ещё
+                <span className="text-muted-foreground">
+                  ({remaining} организаций)
+                </span>
+              </Button>
+            </div>
+          )}
 
           {/* Empty State */}
           {filteredAndSortedMfo.length === 0 && (

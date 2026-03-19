@@ -97,7 +97,7 @@ export default async function Home() {
         <ScenarioSection scenarios={scenarios} />
         {offers.length > 0 ? (
           <>
-            <OffersSection offers={offers} />
+            <OffersSection offers={offers} showAllLink />
             <CompareLoansSection offers={offers} />
           </>
         ) : (

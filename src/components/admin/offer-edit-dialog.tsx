@@ -897,6 +897,27 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                       <div className="space-y-3">
                         <FormField
                           control={form.control}
+                          name="showOnHomepage"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-sm">Выводить на главной</FormLabel>
+                                <FormDescription className="text-xs">
+                                  Показывать на главной странице
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
                           name="isFeatured"
                           render={({ field }) => (
                             <FormItem className="flex items-center justify-between rounded-lg border p-3">

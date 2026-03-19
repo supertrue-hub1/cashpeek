@@ -46,6 +46,7 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
   const [amount, setAmount] = React.useState(15000);
   const [term, setTerm] = React.useState(14);
   const [sortBy, setSortBy] = React.useState<SortType>('rating');
+  const [limit, setLimit] = React.useState(21);
 
   // Calculator totals
   const overpayment = calculateOverpayment(amount, term);
@@ -73,6 +74,11 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
     }
   }, [initialOffers, sortBy, amount, term]);
 
+  // Visible offers with pagination
+  const visibleOffers = sortedOffers.slice(0, limit);
+  const hasMore = limit < sortedOffers.length;
+  const remaining = sortedOffers.length - limit;
+
   // Stats
   const zeroPercentCount = initialOffers.filter(o => o.firstLoanRate === 0).length;
   const avgRating = initialOffers.length > 0
@@ -81,6 +87,10 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
 
   // Best offer for CTA
   const bestOffer = sortedOffers[0];
+
+  const handleShowMore = () => {
+    setLimit(prev => prev + 21);
+  };
 
   return (
     <div className="space-y-8">
@@ -262,11 +272,29 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
           </p>
         </div>
 
-        {sortedOffers.length > 0 ? (
-          <OffersGrid
-            offers={sortedOffers}
-            featuredIds={sortedOffers.filter((o) => o.isFeatured).map((o) => o.id)}
-          />
+        {visibleOffers.length > 0 ? (
+          <>
+            <OffersGrid
+              offers={visibleOffers}
+              featuredIds={visibleOffers.filter((o) => o.isFeatured).map((o) => o.id)}
+            />
+            
+            {hasMore && (
+              <div className="text-center mt-8">
+                <Button
+                  onClick={handleShowMore}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  Показать ещё
+                  <span className="text-muted-foreground">
+                    ({remaining} предложений)
+                  </span>
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Нет предложений</p>

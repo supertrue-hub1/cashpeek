@@ -2,10 +2,9 @@ import { Metadata } from 'next';
 import { Header, Footer } from '@/components/layout';
 import { db } from '@/lib/db';
 import { generateBreadcrumb } from '@/lib/seo/metadata';
-import { OffersGrid } from '@/components/offers';
+import { MfoListWithPagination } from '@/components/mfo-list-with-pagination';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronRight, Search, Star, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import type { Offer } from '@/types/offer';
 
@@ -158,18 +157,7 @@ export default async function MfoListPage() {
             </div>
             
             {/* MFO Grid */}
-            {mfos.length > 0 ? (
-              <OffersGrid
-                offers={mfos}
-                featuredIds={mfos.filter((m) => m.isFeatured).map((m) => m.id)}
-              />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  МФО пока не добавлены
-                </p>
-              </div>
-            )}
+            <MfoListWithPagination mfos={mfos} />
           </div>
         </section>
       </main>
