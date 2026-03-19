@@ -79,10 +79,10 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function BadCreditLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: bad credit OK
-  const filterFn = (offer: Offer) => offer.badCreditOk === true;
+  // Filter: bad credit OK (on server)
+  const offers = allOffers.filter(offer => offer.badCreditOk === true);
 
   const features = [
     {
@@ -197,7 +197,6 @@ export default async function BadCreditLoansPage() {
           description="Одобрение до 95% даже с просрочками"
           keywords={['займы с плохой КИ', 'займ без проверки КИ', 'микрозайм с просрочками']}
           h1="Займы с плохой кредитной историей"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}

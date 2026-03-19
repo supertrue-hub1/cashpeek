@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+ import { Metadata } from 'next';
 import { Header, Footer } from '@/components/layout';
 import { db } from '@/lib/db';
 import { SEOLoanPage } from '@/components/seo-loan-page';
@@ -79,11 +79,12 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function CardLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: payout to card
-  const filterFn = (offer: Offer) => 
-    Array.isArray(offer.payoutMethods) && offer.payoutMethods.includes('card');
+  // Filter: payout to card (on server)
+  const offers = allOffers.filter(offer => 
+    Array.isArray(offer.payoutMethods) && offer.payoutMethods.includes('card')
+  );
 
   const features = [
     {
@@ -200,7 +201,6 @@ export default async function CardLoansPage() {
           description="Мгновенное зачисление на любую карту"
           keywords={['займы на карту', 'займ на банковскую карту', 'мгновенный займ на карту']}
           h1="Займы на карту мгновенно — круглосуточно без отказа"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}

@@ -80,10 +80,10 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function ZeroPercentLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: first loan with 0% rate
-  const filterFn = (offer: Offer) => offer.firstLoanRate === 0;
+  // Filter: first loan with 0% rate (on server)
+  const offers = allOffers.filter(offer => offer.firstLoanRate === 0);
 
   const features = [
     {
@@ -200,7 +200,6 @@ export default async function ZeroPercentLoansPage() {
           description="Первый займ под 0% для новых клиентов"
           keywords={['займы без процентов', 'займ под 0%', 'первый займ бесплатно']}
           h1="Займы без процентов — первый займ под 0%"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}

@@ -27,12 +27,11 @@ import type { Offer } from '@/types/offer';
 type SortType = 'min_overpayment' | 'max_amount' | 'quick_approval' | 'rating';
 
 interface SEOLoanPageProps {
-  offers: Offer[];
+  offers: Offer[]; // Already filtered offers
   title: string;
   description: string;
   keywords: string[];
   h1: string;
-  filterFn?: (offer: Offer) => boolean;
   features?: { icon: React.ReactNode; title: string; description: string }[];
   faq?: { question: string; answer: string }[];
   contentBefore?: React.ReactNode;
@@ -56,12 +55,11 @@ function formatReturnDate(days: number): string {
 }
 
 export function SEOLoanPage({
-  offers: allOffers,
+  offers: filteredOffers,
   title,
   description,
   keywords,
   h1,
-  filterFn,
   features,
   faq,
   contentBefore,
@@ -71,12 +69,6 @@ export function SEOLoanPage({
   const [term, setTerm] = React.useState(14);
   const [sortBy, setSortBy] = React.useState<SortType>('rating');
   const [limit, setLimit] = React.useState(21);
-
-  // Filter offers
-  const filteredOffers = React.useMemo(() => {
-    if (!filterFn) return allOffers;
-    return allOffers.filter(filterFn);
-  }, [allOffers, filterFn]);
 
   // Calculator totals
   const overpayment = calculateOverpayment(amount, term);

@@ -79,10 +79,10 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function UrgentLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: fast approval (decision time <= 10 minutes)
-  const filterFn = (offer: Offer) => offer.decisionTime <= 10;
+  // Filter: fast approval - decision time <= 10 minutes (on server)
+  const offers = allOffers.filter(offer => offer.decisionTime <= 10);
 
   const features = [
     {
@@ -198,7 +198,6 @@ export default async function UrgentLoansPage() {
           description="Деньги за 5 минут с моментальным одобрением"
           keywords={['срочные займы', 'займ за 5 минут', 'мгновенный займ', 'быстрый займ']}
           h1="Срочные займы — деньги за 5 минут"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}

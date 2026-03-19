@@ -79,10 +79,10 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function RoundTheClockLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: round the clock
-  const filterFn = (offer: Offer) => offer.roundTheClock === true;
+  // Filter: round the clock (on server)
+  const offers = allOffers.filter(offer => offer.roundTheClock === true);
 
   const features = [
     {
@@ -199,7 +199,6 @@ export default async function RoundTheClockLoansPage() {
           description="Деньги в любое время суток — 24/7"
           keywords={['круглосуточные займы', 'займы 24/7', 'ночные займы', 'займ ночью']}
           h1="Круглосуточные займы — деньги в любое время"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}

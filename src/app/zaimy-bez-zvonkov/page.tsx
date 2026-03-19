@@ -79,10 +79,10 @@ async function getOffers(): Promise<Offer[]> {
 }
 
 export default async function NoCallsLoansPage() {
-  const offers = await getOffers();
+  const allOffers = await getOffers();
 
-  // Filter: no calls
-  const filterFn = (offer: Offer) => offer.noCalls === true;
+  // Filter: no calls (on server)
+  const offers = allOffers.filter(offer => offer.noCalls === true);
 
   const features = [
     {
@@ -199,7 +199,6 @@ export default async function NoCallsLoansPage() {
           description="Оформление онлайн без подтверждения"
           keywords={['займы без звонков', 'займ без подтверждения', 'тихий займ']}
           h1="Займы без звонков — оформление онлайн без подтверждения"
-          filterFn={filterFn}
           features={features}
           faq={faq}
           contentBefore={contentBefore}
