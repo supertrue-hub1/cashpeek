@@ -82,27 +82,27 @@ const syncHistory = [
   },
 ]
 
-// API источники
-const apiSources = [
+// API источники (начальное состояние)
+const initialApiSources = [
   {
     name: "Leads.su",
-    status: "disconnected",
+    status: "available" as const,
     lastSync: "—",
     nextSync: "—",
-    interval: "Не настроено",
+    interval: "Доступно",
     offers: 0,
   },
   {
     name: "Сервер: api-traffic-handler.click2.money",
-    status: "disconnected",
+    status: "available" as const,
     lastSync: "—",
     nextSync: "—",
-    interval: "Не настроено",
+    interval: "Доступно",
     offers: 0,
   },
   {
     name: "Где дыньги?",
-    status: "available",
+    status: "available" as const,
     lastSync: "—",
     nextSync: "—",
     interval: "Доступно",
@@ -147,6 +147,22 @@ function ConnectionStatus({ status }: { status: string }) {
 export default function SyncPage() {
   const [isSyncing, setIsSyncing] = React.useState(false)
   const [syncProgress, setSyncProgress] = React.useState(0)
+  const [apiSources, setApiSources] = React.useState(initialApiSources)
+
+  const handleConnect = (sourceName: string) => {
+    setApiSources(prev => prev.map(source => 
+      source.name === sourceName 
+        ? { 
+            ...source, 
+            status: "connected" as const,
+            lastSync: new Date().toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit' }),
+            nextSync: "—",
+            interval: "4 часа",
+            offers: 0,
+          }
+        : source
+    ))
+  }
 
   const handleSync = () => {
     setIsSyncing(true)
@@ -247,8 +263,19 @@ export default function SyncPage() {
                     </Link>
                   </Button>
                   {source.status === "available" && (
-                    <Button size="sm" className="flex-1">
+                    <Button size="sm" className="flex-1" onClick={() => handleConnect(source.name)}>
                       Подключить
+                    </Button>
+                  )}
+                  {source.status === "connected" && (
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                      setApiSources(prev => prev.map(s => 
+                        s.name === source.name 
+                          ? { ...s, status: "disconnected" as const, interval: "Не настроено", offers: 0 }
+                          : s
+                      ))
+                    }}>
+                      Отключить
                     </Button>
                   )}
                 </div>
