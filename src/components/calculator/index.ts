@@ -3,6 +3,13 @@
  */
 
 export { InteractiveCalculator } from './interactive-calculator';
+export { SmartCalculator } from './smart-calculator';
+export { FinancialRadar } from './financial-radar';
+export { TrustScore } from './trust-score';
+export { TopCategories } from './top-categories';
+export { MFOCard } from './mfo-card';
+export { ComparisonPanel } from './comparison-panel';
+export { Quiz } from './quiz';
 
 export {
   calculateLoan,
