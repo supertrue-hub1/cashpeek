@@ -28,6 +28,7 @@ const footerLinks = {
     { href: '/blog', label: 'Блог' },
     { href: '/about', label: 'О проекте' },
     { href: 'mailto:support@cashpeek.ru', label: 'Контакты' },
+    { href: '/sitemap.xml', label: 'Карта сайта' },
   ],
   legal: [
     { href: '/privacy', label: 'Политика конфиденциальности' },
