@@ -25,7 +25,7 @@ const payoutLabels: Record<string, string> = {
 };
 
 // MFO Logo component
-function MFOLogo({ name, className }: { name: string; className?: string }) {
+function MFOLogo({ name, logo, className }: { name: string; logo?: string; className?: string }) {
   const colors: Record<string, string> = {
     'Займер': 'bg-gradient-to-br from-blue-500 to-blue-600',
     'MoneyMan': 'bg-gradient-to-br from-green-500 to-green-600',
@@ -38,6 +38,17 @@ function MFOLogo({ name, className }: { name: string; className?: string }) {
   };
   const bgColor = colors[name] || 'bg-gradient-to-br from-slate-500 to-slate-600';
   const initials = name.slice(0, 2).toUpperCase();
+
+  // Если есть лого — показываем изображение
+  if (logo) {
+    return (
+      <img 
+        src={logo} 
+        alt={name} 
+        className={cn('rounded-lg object-contain bg-white shrink-0', className)}
+      />
+    );
+  }
 
   return (
     <div className={cn('flex items-center justify-center rounded-lg text-white font-bold text-xs shrink-0', bgColor, className)}>
@@ -67,7 +78,7 @@ function TableRow({ offer, index }: { offer: Offer; index: number }) {
       {/* МФО */}
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
-          <MFOLogo name={offer.name} className="h-9 w-9 text-sm" />
+          <MFOLogo name={offer.name} logo={offer.logo} className="h-9 w-9 text-sm" />
           <div>
             <div className="font-medium text-foreground text-sm">{offer.name}</div>
             <div className="flex items-center gap-1">
@@ -151,7 +162,7 @@ function MobileCard({ offer }: { offer: Offer }) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <MFOLogo name={offer.name} className="h-10 w-10 text-sm" />
+          <MFOLogo name={offer.name} logo={offer.logo} className="h-10 w-10 text-sm" />
           <div>
             <h3 className="font-medium text-foreground">{offer.name}</h3>
             <div className="flex items-center gap-1">
