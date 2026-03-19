@@ -1216,7 +1216,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         </div>
                       </div>
 
-                      {displayOffer.features && displayOffer.features.length > 0 && (
+                      {Array.isArray(displayOffer.features) && displayOffer.features.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Особенности</div>
                           <div className="flex flex-wrap gap-2">
@@ -1229,7 +1229,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         </div>
                       )}
 
-                      {displayOffer.payoutMethods && displayOffer.payoutMethods.length > 0 && (
+                      {Array.isArray(displayOffer.payoutMethods) && displayOffer.payoutMethods.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Способы получения</div>
                           <div className="flex flex-wrap gap-2">

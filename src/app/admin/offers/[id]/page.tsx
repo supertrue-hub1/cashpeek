@@ -890,7 +890,7 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
             </CardContent>
           </Card>
 
-          {offer?.apiData?.features && (
+          {Array.isArray(offer?.apiData?.features) && offer.apiData.features.length > 0 && (
             <Card>
               <CardHeader><CardTitle className="text-base">Особенности</CardTitle></CardHeader>
               <CardContent>
@@ -903,7 +903,7 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
             </Card>
           )}
 
-          {offer?.apiData?.payoutMethods && (
+          {Array.isArray(offer?.apiData?.payoutMethods) && offer.apiData.payoutMethods.length > 0 && (
             <Card>
               <CardHeader><CardTitle className="text-base">Способы получения</CardTitle></CardHeader>
               <CardContent>
