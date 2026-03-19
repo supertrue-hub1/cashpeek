@@ -81,6 +81,7 @@ export interface Scenario {
   description: string;
   icon: string;
   filter: Partial<OfferFilter>;
+  href?: string; // Ссылка для перехода
 }
 
 export interface OfferFilter {

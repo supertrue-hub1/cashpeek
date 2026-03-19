@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   Percent,
   ShieldCheck,
@@ -48,6 +49,32 @@ export function ScenarioSection({
           {scenarios.map((scenario) => {
             const Icon = iconMap[scenario.icon] || Zap;
             
+            const content = (
+              <>
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
+                  <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                </div>
+                <h3 className="mb-1 text-sm font-semibold text-foreground">{scenario.title}</h3>
+                <p className="text-xs text-muted-foreground">{scenario.description}</p>
+              </>
+            );
+
+            // Если есть href - используем Link, иначе - button
+            if (scenario.href) {
+              return (
+                <Link
+                  key={scenario.id}
+                  href={scenario.href}
+                  className={cn(
+                    'group flex flex-col items-center rounded-2xl border border-border bg-card p-4 text-center transition-all',
+                    'hover:border-primary/30 hover:shadow-md'
+                  )}
+                >
+                  {content}
+                </Link>
+              );
+            }
+
             return (
               <button
                 key={scenario.id}
@@ -58,11 +85,7 @@ export function ScenarioSection({
                   'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background'
                 )}
               >
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
-                  <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
-                </div>
-                <h3 className="mb-1 text-sm font-semibold text-foreground">{scenario.title}</h3>
-                <p className="text-xs text-muted-foreground">{scenario.description}</p>
+                {content}
               </button>
             );
           })}

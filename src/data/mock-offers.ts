@@ -228,6 +228,7 @@ export const scenarios: Scenario[] = [
     description: 'Без переплаты при своевременном возврате',
     icon: 'percent',
     filter: { firstLoanZero: true },
+    href: '/zaimy-bez-protsentov',
   },
   {
     id: 'bad-credit',
@@ -235,6 +236,7 @@ export const scenarios: Scenario[] = [
     description: 'Одобряют даже с просрочками',
     icon: 'shield-check',
     filter: { badCreditOk: true },
+    href: '/zaimy-s-plokhoy-ki',
   },
   {
     id: 'no-calls',
@@ -242,6 +244,7 @@ export const scenarios: Scenario[] = [
     description: 'Без звонков родственникам и на работу',
     icon: 'phone-off',
     filter: { noCalls: true },
+    href: '/zaimy-bez-zvonkov',
   },
   {
     id: 'to-card',
@@ -249,6 +252,7 @@ export const scenarios: Scenario[] = [
     description: 'Моментальное зачисление',
     icon: 'credit-card',
     filter: { payoutMethod: 'card' },
+    href: '/zaimy-na-kartu',
   },
   {
     id: 'urgent',
@@ -256,6 +260,7 @@ export const scenarios: Scenario[] = [
     description: 'Решение за 5 минут',
     icon: 'zap',
     filter: { maxDecisionTime: 5 },
+    href: '/srochnye-zaimy',
   },
   {
     id: 'night',
@@ -263,6 +268,7 @@ export const scenarios: Scenario[] = [
     description: 'Круглосуточная выдача',
     icon: 'moon',
     filter: { roundTheClock: true },
+    href: '/zaimy-kruglosutochno',
   },
 ];
 
