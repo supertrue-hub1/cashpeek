@@ -301,20 +301,33 @@ export default function SyncPage() {
     setSettingsOpen(true)
   }
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (!selectedSource) return
     
     setIsSaving(true)
     try {
       const sourceKey = selectedSource.name.includes("click2money") ? "click2money" : "leads.su"
-      const success = await saveSource(sourceKey, apiUrl, apiKey, true)
+      console.log("Saving source:", sourceKey, apiUrl, apiKey)
       
-      if (success) {
+      const response = await fetch("/api/sync/sources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: sourceKey, apiUrl, apiKey, enabled: true }),
+      })
+      
+      console.log("Response status:", response.status)
+      const result = await response.json()
+      console.log("Response:", result)
+      
+      if (response.ok) {
         toast.success("Настройки сохранены")
         setSettingsOpen(false)
         await loadData()
       } else {
-        toast.error("Ошибка сохранения")
+        toast.error(result.error || "Ошибка сохранения")
       }
     } catch (error) {
       console.error("Error saving settings:", error)
@@ -567,10 +580,10 @@ export default function SyncPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsOpen(false)}>
+            <Button variant="outline" onClick={() => setSettingsOpen(false)} type="button">
               Отмена
             </Button>
-            <Button onClick={handleSaveSettings} disabled={isSaving}>
+            <Button onClick={(e) => handleSaveSettings(e)} disabled={isSaving} type="button">
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Сохранить и подключить
             </Button>
