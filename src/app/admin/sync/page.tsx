@@ -32,7 +32,7 @@ import {
 const syncHistory = [
   {
     id: 1,
-    source: "Leads.su",
+    source: "Сервер: api-traffic-handler.click2.money",
     status: "success",
     timestamp: "2024-12-16T14:30:00",
     duration: "2m 34s",
@@ -42,7 +42,7 @@ const syncHistory = [
   },
   {
     id: 2,
-    source: "Leads.su",
+    source: "Сервер: api-traffic-handler.click2.money",
     status: "success",
     timestamp: "2024-12-16T10:00:00",
     duration: "2m 12s",
@@ -52,7 +52,7 @@ const syncHistory = [
   },
   {
     id: 3,
-    source: "Leads.su",
+    source: "Сервер: api-traffic-handler.click2.money",
     status: "partial",
     timestamp: "2024-12-15T18:00:00",
     duration: "3m 45s",
@@ -62,7 +62,7 @@ const syncHistory = [
   },
   {
     id: 4,
-    source: "Leads.su",
+    source: "Сервер: api-traffic-handler.click2.money",
     status: "error",
     timestamp: "2024-12-15T12:00:00",
     duration: "0m 15s",
@@ -72,7 +72,7 @@ const syncHistory = [
   },
   {
     id: 5,
-    source: "Leads.su",
+    source: "Сервер: api-traffic-handler.click2.money",
     status: "success",
     timestamp: "2024-12-15T06:00:00",
     duration: "1m 58s",
@@ -86,14 +86,14 @@ const syncHistory = [
 const apiSources = [
   {
     name: "Leads.su",
-    status: "connected",
-    lastSync: "14:30",
-    nextSync: "18:30",
-    interval: "4 часа",
-    offers: 8,
+    status: "disconnected",
+    lastSync: "—",
+    nextSync: "—",
+    interval: "Не настроено",
+    offers: 0,
   },
   {
-    name: "Admitad",
+    name: "Сервер: api-traffic-handler.click2.money",
     status: "disconnected",
     lastSync: "—",
     nextSync: "—",
@@ -199,7 +199,7 @@ export default function SyncPage() {
         <Card className="border-primary/50 bg-primary/5">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Синхронизация с Leads.su</span>
+              <span className="text-sm font-medium">Синхронизация с api-traffic-handler.click2.money</span>
               <span className="text-sm text-muted-foreground">{syncProgress}%</span>
             </div>
             <Progress value={syncProgress} className="h-2" />
