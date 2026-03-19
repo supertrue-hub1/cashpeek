@@ -318,6 +318,16 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             </div>
           </DialogHeader>
 
+          {/* Sticky CTA button for mobile */}
+          <div className="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background border-b border-border sm:hidden">
+            <Button asChild className="w-full" size="lg">
+              <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                Получить займ
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+
           <Tabs defaultValue="info" className="mt-4">
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="info">Информация</TabsTrigger>
@@ -403,7 +413,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 )}
               </div>
 
-              <Button asChild className="w-full" size="lg">
+              <Button asChild className="w-full hidden sm:flex" size="lg">
                 <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
                   Получить займ
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -458,7 +468,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 </div>
               </div>
 
-              <Button asChild className="w-full" size="lg">
+              <Button asChild className="w-full hidden sm:flex" size="lg">
                 <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
                   Получить займ
                   <ArrowRight className="ml-2 h-4 w-4" />
