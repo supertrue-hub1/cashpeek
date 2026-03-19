@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+export const dynamic = 'force-dynamic'
+
 import {
   ColumnDef,
   ColumnFiltersState,

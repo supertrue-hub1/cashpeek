@@ -1107,15 +1107,15 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <div className="text-muted-foreground">Просмотры</div>
-                          <div className="font-medium">{offer.views.toLocaleString()}</div>
+                          <div className="font-medium">{displayOffer.views.toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Клики</div>
-                          <div className="font-medium">{offer.clicks.toLocaleString()}</div>
+                          <div className="font-medium">{displayOffer.clicks.toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Конверсии</div>
-                          <div className="font-medium">{offer.conversions}</div>
+                          <div className="font-medium">{displayOffer.conversions}</div>
                         </div>
                       </div>
                     </div>
@@ -1128,12 +1128,12 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">Read Only</Badge>
                           <span className="text-sm text-muted-foreground">
-                            Данные из {offer.syncSource}
+                            Данные из {displayOffer.syncSource}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          {new Date(offer.lastSync).toLocaleString("ru-RU", {
+                          {new Date(displayOffer.lastSync).toLocaleString("ru-RU", {
                             day: "numeric",
                             month: "short",
                             hour: "2-digit",
@@ -1147,23 +1147,23 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Сумма</span>
                             <span className="font-medium">
-                              {offer.minAmount?.toLocaleString()} – {offer.maxAmount?.toLocaleString()} ₽
+                              {displayOffer.minAmount?.toLocaleString()} – {displayOffer.maxAmount?.toLocaleString()} ₽
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Срок</span>
                             <span className="font-medium">
-                              {offer.minTerm}–{offer.maxTerm} дней
+                              {displayOffer.minTerm}–{displayOffer.maxTerm} дней
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Ставка</span>
-                            <span className="font-medium">{offer.baseRate}% / день</span>
+                            <span className="font-medium">{displayOffer.baseRate}% / день</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Первый займ</span>
                             <span className="font-medium">
-                              {offer.firstLoanRate === 0 ? "Под 0%" : `${offer.firstLoanRate}%`}
+                              {displayOffer.firstLoanRate === 0 ? "Под 0%" : `${displayOffer.firstLoanRate}%`}
                             </span>
                           </div>
                         </div>
@@ -1171,31 +1171,31 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Решение</span>
                             <span className="font-medium">
-                              {offer.decisionTime === 0 ? "Мгновенно" : `${offer.decisionTime} мин`}
+                              {displayOffer.decisionTime === 0 ? "Мгновенно" : `${displayOffer.decisionTime} мин`}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Одобрение</span>
-                            <span className="font-medium">{offer.approvalRate}%</span>
+                            <span className="font-medium">{displayOffer.approvalRate}%</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Мин. возраст</span>
-                            <span className="font-medium">{offer.minAge} лет</span>
+                            <span className="font-medium">{displayOffer.minAge} лет</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Sync Status</span>
-                            <Badge variant={offer.syncStatus === "synced" ? "default" : "secondary"} className="text-xs">
-                              {offer.syncStatus}
+                            <Badge variant={displayOffer.syncStatus === "synced" ? "default" : "secondary"} className="text-xs">
+                              {displayOffer.syncStatus}
                             </Badge>
                           </div>
                         </div>
                       </div>
 
-                      {offer.features && offer.features.length > 0 && (
+                      {displayOffer.features && displayOffer.features.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Особенности</div>
                           <div className="flex flex-wrap gap-2">
-                            {offer.features.map(feature => (
+                            {displayOffer.features.map(feature => (
                               <Badge key={feature} variant="secondary" className="text-xs">
                                 {featureLabels[feature] || feature}
                               </Badge>
@@ -1204,11 +1204,11 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                         </div>
                       )}
 
-                      {offer.payoutMethods && offer.payoutMethods.length > 0 && (
+                      {displayOffer.payoutMethods && displayOffer.payoutMethods.length > 0 && (
                         <div className="mt-4">
                           <div className="text-sm text-muted-foreground mb-2">Способы получения</div>
                           <div className="flex flex-wrap gap-2">
-                            {offer.payoutMethods.map(method => (
+                            {displayOffer.payoutMethods.map(method => (
                               <Badge key={method} variant="outline" className="text-xs">
                                 {payoutMethodLabels[method] || method}
                               </Badge>
