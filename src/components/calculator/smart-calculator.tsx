@@ -96,7 +96,7 @@ export function SmartCalculator() {
   // State
   const [amount, setAmount] = React.useState(15000);
   const [days, setDays] = React.useState(14);
-  const [purpose, setPurpose] = React.useState<string>('');
+  const [purpose, setPurpose] = React.useState<string>('any');
   const [isLoading, setIsLoading] = React.useState(false);
   const [response, setResponse] = React.useState<CalculatorResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -124,7 +124,11 @@ export function SmartCalculator() {
       const res = await fetch('/api/calculator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, days, purpose: purpose || undefined }),
+        body: JSON.stringify({ 
+          amount, 
+          days, 
+          purpose: purpose && purpose !== 'any' ? purpose : undefined 
+        }),
       });
       
       const data = await res.json();
@@ -370,7 +374,7 @@ export function SmartCalculator() {
                 <SelectValue placeholder="Выберите цель" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Любая цель</SelectItem>
+                <SelectItem value="any">Любая цель</SelectItem>
                 {response?.data.purposes.map(p => (
                   <SelectItem key={p.slug} value={p.slug}>
                     {p.icon} {p.name}
