@@ -15,8 +15,8 @@ import { ChevronRight, CreditCard, Clock, Star, ExternalLink, Phone, Mail, Shiel
 import { InteractiveCalculator } from '@/components/calculator/interactive-calculator';
 import Link from 'next/link';
 
-// ISR: обновление каждый час
-export const revalidate = 3600;
+// ISR: обновление каждую минуту
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   try {

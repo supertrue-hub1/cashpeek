@@ -8,6 +8,8 @@ import {
 } from '@/components/rating';
 import type { MfoRating } from '@/lib/store/use-rating-store';
 
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'Народный рейтинг МФО — честные отзывы и оценки заёмщиков | CashPeek',
   description:

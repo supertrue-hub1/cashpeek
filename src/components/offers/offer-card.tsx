@@ -204,7 +204,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             <div className="rounded-lg bg-muted/50 p-2.5">
               <div className="text-xs text-muted-foreground mb-0.5">ПСК</div>
               <div className="font-semibold text-sm text-foreground">
-                {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
+                {offer.psk ? `${offer.psk}%` : `до ${Math.round((offer.baseRate || 0.8) * 365)}%`}
               </div>
             </div>
           </div>
@@ -342,7 +342,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                   <Percent className="h-5 w-5 mx-auto mb-1 text-primary" />
                   <div className="text-xs text-muted-foreground">ПСК</div>
                   <div className="font-semibold text-sm">
-                    {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
+                    {offer.psk ? `${offer.psk}%` : `до ${Math.round((offer.baseRate || 0.8) * 365)}%`}
                   </div>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-3 text-center">
@@ -434,7 +434,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">ПСК (полная стоимость)</span>
                   <span className="font-medium">
-                    {offer.psk ? `${offer.psk}% годовых` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}% годовых`)}
+                    {offer.psk ? `${offer.psk}% годовых` : `до ${Math.round((offer.baseRate || 0.8) * 365)}% годовых`}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-border">
