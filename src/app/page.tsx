@@ -45,6 +45,7 @@ function transformOffer(offer: any): Offer {
     maxTerm: offer.maxTerm || 30,
     baseRate: offer.baseRate || 0.8,
     firstLoanRate: offer.firstLoanRate ?? undefined,
+    psk: offer.psk ?? undefined,
     decisionTime: offer.decisionTime || 15,
     approvalRate: offer.approvalRate || 85,
     payoutMethods: parseJsonArray(offer.payoutMethods, ['card']) as import('@/types/offer').PayoutMethod[],

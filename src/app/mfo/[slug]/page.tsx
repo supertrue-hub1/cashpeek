@@ -282,6 +282,12 @@ export default async function MfoPage({
                       </dd>
                     </div>
                     <div className="bg-background rounded-lg p-3 border">
+                      <dt className="text-sm text-muted-foreground">ПСК</dt>
+                      <dd className="font-semibold text-foreground text-lg">
+                        {mfo.psk ? `${mfo.psk}% годовых` : `до ${Math.round((mfo.baseRate || 0.8) * 365)}% годовых`}
+                      </dd>
+                    </div>
+                    <div className="bg-background rounded-lg p-3 border">
                       <dt className="text-sm text-muted-foreground">Время решения</dt>
                       <dd className="font-semibold text-foreground text-lg">
                         {mfo.decisionTime} мин
