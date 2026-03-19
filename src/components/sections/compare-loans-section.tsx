@@ -106,6 +106,13 @@ function TableRow({ offer, index }: { offer: Offer; index: number }) {
         </div>
       </td>
       
+      {/* ПСК */}
+      <td className="py-3 px-3">
+        <div className="text-sm text-foreground">
+          {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
+        </div>
+      </td>
+      
       {/* Новые клиенты */}
       <td className="py-3 px-3">
         {offer.firstLoanRate === 0 ? (
@@ -127,7 +134,7 @@ function TableRow({ offer, index }: { offer: Offer; index: number }) {
           {formatDecisionTime(offer.decisionTime)}
         </div>
       </td>
-      
+
       {/* Получение */}
       <td className="py-3 px-3">
         <div className="flex items-center gap-1.5 text-sm text-foreground">
@@ -135,7 +142,7 @@ function TableRow({ offer, index }: { offer: Offer; index: number }) {
           {payoutLabel}
         </div>
       </td>
-      
+
       {/* CTA */}
       <td className="py-3 px-3 text-right">
         <Button asChild size="sm" className="h-8 text-xs gap-1">
@@ -198,17 +205,16 @@ function MobileCard({ offer }: { offer: Offer }) {
           </span>
         </div>
         <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">ПСК</span>
+          <span className="text-foreground font-medium">
+            {offer.psk ? `${offer.psk}%` : (offer.firstLoanRate === 0 ? '0%' : `до ${(offer.baseRate * 365).toFixed(0)}%`)}
+          </span>
+        </div>
+        <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Решение</span>
           <span className="text-foreground font-medium flex items-center gap-1">
             <Clock className="h-3 w-3 text-muted-foreground" />
             {formatDecisionTime(offer.decisionTime)}
-          </span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Получение</span>
-          <span className="text-foreground font-medium flex items-center gap-1">
-            <CreditCard className="h-3 w-3 text-muted-foreground" />
-            {payoutLabel}
           </span>
         </div>
       </div>
@@ -276,6 +282,7 @@ export function CompareLoansSection({ offers, className, maxItems = 8 }: Compare
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">МФО</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Сумма</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Срок</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">ПСК</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Новые клиенты</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Решение</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Получение</th>
