@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -236,6 +235,9 @@ export default function OffersPage() {
   // Диалог редактирования
   const [editDialogOpen, setEditDialogOpen] = React.useState(false)
   const [selectedOffer, setSelectedOffer] = React.useState<AdminOffer | null>(null)
+  
+  // Диалог создания нового оффера
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false)
   
   // Bulk action dialog
   const [bulkAction, setBulkAction] = React.useState<"activate" | "deactivate" | "publish" | "draft" | "archive" | "delete" | null>(null)
@@ -609,6 +611,34 @@ export default function OffersPage() {
     }
   }
 
+  // Обработчик создания нового оффера
+  const handleCreateOffer = async (data: any) => {
+    try {
+      const response = await fetch('/api/offers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      
+      if (!response.ok) throw new Error('Failed to create')
+      
+      const newOffer = await response.json()
+      
+      toast.success("Оффер создан", {
+        description: `Оффер "${data.name}" успешно создан`,
+      })
+      
+      setCreateDialogOpen(false)
+      fetchOffers() // Refresh data
+      
+      // Открыть редактирование созданного оффера
+      setSelectedOffer(newOffer)
+      setEditDialogOpen(true)
+    } catch (err) {
+      toast.error("Ошибка создания")
+    }
+  }
+
   // Показывает требующие проверки офферы
   const offersNeedingReview = offers.filter(o => o.requiresReview).length
 
@@ -691,11 +721,9 @@ export default function OffersPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild size="sm">
-            <Link href="/admin/offers/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Добавить оффер
-            </Link>
+          <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Добавить оффер
           </Button>
           <Button variant="outline" size="sm" onClick={fetchOffers} disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -909,6 +937,14 @@ export default function OffersPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleOfferSave}
+      />
+
+      {/* Диалог создания нового оффера */}
+      <OfferEditDialog
+        offer={null}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSave={handleCreateOffer}
       />
 
       {/* Bulk Action Dialog */}

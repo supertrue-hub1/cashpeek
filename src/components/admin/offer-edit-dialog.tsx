@@ -179,6 +179,7 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
   const [activeTab, setActiveTab] = React.useState("general")
   const [generatedDescription, setGeneratedDescription] = React.useState<string | null>(null)
   const [isSaving, setIsSaving] = React.useState(false)
+  const isNewOffer = !offer
   
   const form = useForm<OfferFormValues>({
     resolver: zodResolver(offerFormSchema),
@@ -214,43 +215,43 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
     },
   })
 
-  // Обновляем форму при смене оффера
+  // Обновляем форму при смене оффера или открытии
   React.useEffect(() => {
-    if (offer) {
+    if (open) {
       form.reset({
-        name: offer.name,
-        slug: offer.slug,
-        logo: offer.logo || "",
-        rating: offer.rating,
-        minAmount: offer.minAmount || 1000,
-        maxAmount: offer.maxAmount || 30000,
-        minTerm: offer.minTerm || 1,
-        maxTerm: offer.maxTerm || 30,
-        baseRate: offer.baseRate || 0.8,
-        firstLoanRate: offer.firstLoanRate ?? 0,
-        psk: offer.psk ?? (offer.baseRate ? offer.baseRate * 365 : 292),
-        decisionTime: offer.decisionTime || 5,
-        approvalRate: offer.approvalRate || 90,
-        minAge: offer.minAge || 18,
-        badCreditOk: offer.badCreditOk ?? true,
-        noCalls: offer.noCalls ?? true,
-        roundTheClock: offer.roundTheClock ?? false,
-        editorNote: offer.editorNote || "",
-        isFeatured: offer.isFeatured,
-        isNew: offer.isNew,
-        isPopular: offer.isPopular,
-        status: offer.status,
-        metaTitle: offer.metaTitle || "",
-        metaDescription: offer.metaDescription || "",
-        customDescription: offer.customDescription || "",
-        affiliateUrl: offer.affiliateUrl,
-        showOnHomepage: offer.showOnHomepage ?? true,
-        sortOrder: offer.sortOrder || 10,
+        name: offer?.name || "",
+        slug: offer?.slug || "",
+        logo: offer?.logo || "",
+        rating: offer?.rating || 4.5,
+        minAmount: offer?.minAmount || 1000,
+        maxAmount: offer?.maxAmount || 30000,
+        minTerm: offer?.minTerm || 1,
+        maxTerm: offer?.maxTerm || 30,
+        baseRate: offer?.baseRate || 0.8,
+        firstLoanRate: offer?.firstLoanRate ?? 0,
+        psk: offer?.psk ?? (offer?.baseRate ? offer.baseRate * 365 : 292),
+        decisionTime: offer?.decisionTime || 5,
+        approvalRate: offer?.approvalRate || 90,
+        minAge: offer?.minAge || 18,
+        badCreditOk: offer?.badCreditOk ?? true,
+        noCalls: offer?.noCalls ?? true,
+        roundTheClock: offer?.roundTheClock ?? false,
+        editorNote: offer?.editorNote || "",
+        isFeatured: offer?.isFeatured || false,
+        isNew: offer?.isNew || false,
+        isPopular: offer?.isPopular || false,
+        status: offer?.status || "draft",
+        metaTitle: offer?.metaTitle || "",
+        metaDescription: offer?.metaDescription || "",
+        customDescription: offer?.customDescription || "",
+        affiliateUrl: offer?.affiliateUrl || "",
+        showOnHomepage: offer?.showOnHomepage ?? true,
+        sortOrder: offer?.sortOrder || 10,
       })
       setGeneratedDescription(null)
       setActiveTab("general")
     }
-  }, [offer, form])
+  }, [offer, form, open])
 
   const onSubmit = async (data: OfferFormValues) => {
     setIsSaving(true)
@@ -260,24 +261,32 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
         await onSave(data)
       } else {
         // Fallback: save directly via API
-        if (offer) {
-          console.log("Saving via API, offer ID:", offer.id)
-          const response = await fetch(`/api/offers/${offer.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          })
-          
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}))
-            console.error("API error:", errorData)
-            throw new Error(errorData.error || 'Failed to save')
-          }
-          
-          console.log("API save successful")
+        const method = isNewOffer ? 'POST' : 'PUT'
+        const url = isNewOffer 
+          ? '/api/offers' 
+          : `/api/offers/${offer.id}`
+        
+        console.log(`${method} ${url}`, data)
+        
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.error("API error:", errorData)
+          throw new Error(errorData.error || 'Failed to save')
         }
-        toast.success("Изменения сохранены", {
-          description: `Оффер "${data.name}" успешно обновлён`,
+        
+        const savedOffer = await response.json()
+        console.log("API save successful", savedOffer)
+        
+        toast.success(isNewOffer ? "Оффер создан" : "Изменения сохранены", {
+          description: isNewOffer 
+            ? `Оффер "${data.name}" успешно создан` 
+            : `Оффер "${data.name}" успешно обновлён`,
         })
         onOpenChange(false)
       }
@@ -293,21 +302,22 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
 
   // SEO Template Generation
   const handleGenerateDescription = (templateKey: string) => {
-    if (!offer) return
+    const formData = form.getValues()
+    const offerName = formData.name || "МФО"
     
     const templateData: SeoTemplateData = {
-      name: offer.name,
-      minAmount: offer.minAmount,
-      maxAmount: offer.maxAmount,
-      minTerm: offer.minTerm,
-      maxTerm: offer.maxTerm,
-      baseRate: offer.baseRate,
-      firstLoanRate: offer.firstLoanRate,
-      decisionTime: offer.apiData?.decisionTime || offer.minTerm,
-      approvalRate: offer.apiData?.approvalRate || 90,
-      features: offer.apiData?.features,
-      badCreditOk: offer.apiData?.badCreditOk,
-      roundTheClock: offer.apiData?.roundTheClock,
+      name: offerName,
+      minAmount: formData.minAmount || 1000,
+      maxAmount: formData.maxAmount || 30000,
+      minTerm: formData.minTerm || 1,
+      maxTerm: formData.maxTerm || 30,
+      baseRate: formData.baseRate || 0.8,
+      firstLoanRate: formData.firstLoanRate,
+      decisionTime: formData.decisionTime || 5,
+      approvalRate: formData.approvalRate || 90,
+      features: [],
+      badCreditOk: formData.badCreditOk,
+      roundTheClock: formData.roundTheClock,
     }
 
     const generated = generateFromTemplate(templateKey as keyof ReturnType<typeof getAvailableTemplates>[number] extends never ? never : "description" | "shortDescription" | "metaTitle" | "metaDescription" | "benefits", templateData)
@@ -331,7 +341,49 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
     toast.success("Скопировано в буфер обмена")
   }
 
-  if (!offer) return null
+  // Если оффер не передан - показываем заглушку для нового оффера
+  const displayOffer = offer || {
+    id: "new",
+    name: "Новый оффер",
+    slug: "",
+    logo: undefined,
+    rating: 4.5,
+    minAmount: 1000,
+    maxAmount: 30000,
+    minTerm: 1,
+    maxTerm: 30,
+    baseRate: 0.8,
+    firstLoanRate: undefined,
+    psk: undefined,
+    decisionTime: 5,
+    approvalRate: 90,
+    minAge: 18,
+    badCreditOk: true,
+    noCalls: true,
+    roundTheClock: false,
+    status: "draft" as const,
+    isFeatured: false,
+    isNew: false,
+    isPopular: false,
+    affiliateUrl: "",
+    editorNote: undefined,
+    customDescription: undefined,
+    metaTitle: undefined,
+    metaDescription: undefined,
+    showOnHomepage: true,
+    sortOrder: 10,
+    syncStatus: "pending" as const,
+    syncSource: "Manual",
+    lastSync: new Date().toISOString(),
+    requiresReview: false,
+    reviewReason: undefined,
+    views: 0,
+    clicks: 0,
+    conversions: 0,
+    features: [],
+    payoutMethods: [],
+    documents: [],
+  }
 
   const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
     draft: { label: "Черновик", icon: FileText, color: "text-yellow-600" },
@@ -345,27 +397,37 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              {offer.logo ? (
-                <img src={offer.logo} alt={offer.name} className="w-12 h-12 rounded-lg object-contain" />
+              {displayOffer.logo ? (
+                <img src={displayOffer.logo} alt={displayOffer.name} className="w-12 h-12 rounded-lg object-contain" />
               ) : (
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold ${
-                  offer.requiresReview 
+                  displayOffer.requiresReview 
                     ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 ring-2 ring-orange-400" 
                     : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
                 }`}>
-                  {offer.name.substring(0, 2).toUpperCase()}
+                  {displayOffer.name.substring(0, 2).toUpperCase()}
                 </div>
               )}
               <div>
-                <DialogTitle className="text-xl">{offer.name}</DialogTitle>
+                <DialogTitle className="text-xl">
+                  {isNewOffer ? "Создание нового оффера" : displayOffer.name}
+                </DialogTitle>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    ID: {offer.id}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {offer.syncSource}
-                  </Badge>
-                  {offer.requiresReview && (
+                  {isNewOffer ? (
+                    <Badge variant="outline" className="text-xs">
+                      Новый оффер
+                    </Badge>
+                  ) : (
+                    <>
+                      <Badge variant="outline" className="text-xs">
+                        ID: {displayOffer.id}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {displayOffer.syncSource}
+                      </Badge>
+                    </>
+                  )}
+                  {displayOffer.requiresReview && (
                     <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs gap-1">
                       <AlertTriangle className="h-3 w-3" />
                       Requires Review
@@ -416,20 +478,20 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
             </div>
           </div>
           
-          {offer.requiresReview && offer.reviewReason && (
+          {displayOffer.requiresReview && displayOffer.reviewReason && (
             <div className="mt-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900">
               <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="font-medium text-sm">Требуется проверка:</span>
               </div>
               <p className="text-sm text-orange-600 dark:text-orange-300 mt-1">
-                {offer.reviewReason}
+                {displayOffer.reviewReason}
               </p>
             </div>
           )}
           
           <DialogDescription className="mt-2">
-            Редактирование оффера и SEO-параметров
+            {isNewOffer ? "Заполните данные для создания нового оффера" : "Редактирование оффера и SEO-параметров"}
           </DialogDescription>
         </DialogHeader>
 
