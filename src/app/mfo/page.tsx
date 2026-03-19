@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { generateBreadcrumb } from '@/lib/seo/metadata';
 import { MfoListWithPagination } from '@/components/mfo-list-with-pagination';
 import { Badge } from '@/components/ui/badge';
-import { Search } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { Offer } from '@/types/offer';
 
