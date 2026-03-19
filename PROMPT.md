@@ -1,277 +1,139 @@
-Ты — Senior Next.js разработчик. Твоя задача — создать современный, адаптивный компонент поиска для Header (шапки сайта) с расширенным функционалом.
+Роль: Ты — Senior Frontend-разработчик и UX-архитектор с 10-летним опытом в FinTech. Твоя задача — спроектировать и написать код для инновационного калькулятора микрозаймов для сайта-агрегатора.
 
-Контекст
-Проект использует Next.js 16+ (App Router), TypeScript, Tailwind CSS, shadcn/ui и Lucide React для иконок.
+## Контекст
+Рынок перенасыщен одинаковыми калькуляторами (сумма + срок -> список ставок). Нам нужен инструмент, который станет «крючком» для пользователей и заставит их выбрать именно наш сайт. Он должен быть не просто расчетным инструментом, а «Умным помощником подбора».
 
-Технические требования
-Директива
-Компонент должен быть клиентским ('use client'), так как требуется интерактивность.
+## Технологический стек (ОБЯЗАТЕЛЬНО)
+- Framework: Next.js 16 с App Router
+- Language: TypeScript 5
+- Styling: Tailwind CSS 4
+- UI Components: shadcn/ui (New York style)
+- Animations: Framer Motion
+- Database: Prisma ORM (SQLite)
+- Icons: Lucide React
 
-Дизайн (Modern UI)
-Стиль "Expanding Search": по умолчанию видна только иконка лупы. При клике поле плавно расширяется до активного состояния.
-Эффекты:
-backdrop-blur-md (матовое стекло)
-shadow-sm hover:shadow-md (мягкие тени)
-Плавные transition-all duration-300 ease-out
-Цветовая схема: поддерживай dark mode (классы dark:)
-Скругление: rounded-full для контейнера, rounded-lg для dropdown с подсказками
-Функционал (Базовый)
-Открытие/закрытие поля поиска по клику на иконку
-Закрытие при клике вне области компонента (useRef + useEffect)
-Кнопка "Очистить" (крестик) — появляется при наличии текста
-Кнопка "Закрыть" — появляется когда поле пустое
-Поддержка клавиатуры: Escape для закрытия
-⭐ Расширенные фичи
-1. Debounce поиска
-// Используй useCallback + setTimeout для debounceconst debouncedSearch = useCallback(  debounce((query: string) => {    if (onSearchChange && query.length >= 2) {      onSearchChange(query);    }  }, 300), // 300ms задержка  [onSearchChange]);// Вызов при изменении inputconst handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {  const value = e.target.value;  setQuery(value);  debouncedSearch(value);};// Утилита debouncefunction debounce<T extends (...args: unknown[]) => void>(  fn: T,  delay: number): (...args: Parameters<T>) => void {  let timeoutId: NodeJS.Timeout;  return (...args: Parameters<T>) => {    clearTimeout(timeoutId);    timeoutId = setTimeout(() => fn(...args), delay);  };}
-2. Подсказки (Suggestions/Autocomplete)interface Suggestion {
-  id: string;
-  text: string;
-  icon?: React.ReactNode;      // Иконка (товар, категория, история)
-  category?: string;           // Категория подсказки
-  url?: string;                // Ссылка для навигации
+## Ключевые фичи (Уникальность)
+
+### 1. Интерфейс «Финансовый Радар»
+Вместо стандартных input-полей сделай интерактивную визуализацию:
+- Пользователь тянет ползунок суммы, а фон калькулятора меняет цвет (от зеленого «безопасная зона» до красного «риск отказа»)
+- Добавь «умный» ползунок срока с маркерами оптимальных сроков (7, 14, 21, 30 дней)
+- Подсветка «день зарплаты» при выборе срока 10-20 дней
+
+### 2. Метрика «Индекс Доверия» (Trust Score)
+Это главная фишка, которой нет у других:
+- Реальное время показывать «Ваш шанс на одобрение» (в процентах) и «Индекс переплаты»
+- Когда пользователь меняет сумму, цифра шанса меняется динамически (анимированно)
+- Геймификация: «Берем 10 000 руб. — Шанс 98%», «Берем 30 000 руб. — Шанс 65%»
+
+### 3. Умная сортировка «Цель займа»
+Визуальные карточки с иконками (До зарплаты, Ремонт, Подарок, Рефинансирование, Медицина, Образование):
+- При выборе цели алгоритм сортирует МФО не по ставке, а по соответствию профилю
+- Для «Рефинансирования» — лояльность к закредитованности
+- Для «До зарплаты» — скорость выдачи
+
+### 4. Результат выдачи «Smart Cards»
+Результаты — живые карточки с бейджами, НЕ таблица:
+- Бейдж «Лучшее предложение» для топ-1
+- Бейдж «0% первый займ»
+- ИИ-логика: предупреждения «Лучше взять на 2 дня меньше и сэкономить 500 руб»
+- Сортировка по умолчанию: «Лучшее предложение для вас» (гибрид низкой ставки и высокого шанса одобрения)
+
+## Архитектура данных
+
+### Prisma Schema
+```prisma
+model MFO {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  
+  minAmount       Int
+  maxAmount       Int
+  minDays         Int
+  maxDays         Int
+  
+  baseRate        Float
+  minRate         Float
+  maxRate         Float
+  
+  approvalRate    Float    // Процент одобрения (0-100)
+  avgApprovalTime Int      // Среднее время одобрения в минутах
+  
+  firstLoanFree   Boolean  @default(false)
+  loyaltyToDebts  Float    @default(0.5)   // Лояльность к закредитованности (0-1)
+  speedScore      Float    @default(0.5)
+  supportScore    Float    @default(0.5)
+  
+  badges          String?  // JSON массив бейджей
+  
+  rating          Float    @default(3.5)
+  reviewCount     Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-interface SearchBarProps {
-  placeholder?: string;
-  onSearch?: (query: string) => void;
-  onSearchChange?: (query: string) => void;  // Вызывается при каждом изменении (debounced)
-  suggestions?: Suggestion[];                 // Внешние подсказки
-  recentSearches?: string[];                  // История поиска
-  isLoading?: boolean;                        // Состояние загрузки
-  className?: string;
-}┌─────────────────────────────────────────┐
-│ 🔍 [_______ноутбук_______] ✕          ✕ │
-└─────────────────────────────────────────┘
-┌─────────────────────────────────────────┐
-│  🕐 ноутбук asus        (История)       │  ← Недавние поиски
-│  🕐 ноутбук gaming      (История)       │
-├─────────────────────────────────────────┤
-│  🔍 ноутбук asus rog    (Предложение)   │  ← Подсказки
-│  🔍 ноутбук apple macbook               │
-│  🔍 ноутбук hp pavilion                 │
-├─────────────────────────────────────────┤
-│  📂 Ноутбуки           → Перейти        │  ← Категория
-│  🏷️ Ноутбуки Apple     → 156 товаров    │  ← Товары
-└─────────────────────────────────────────┘
-const [selectedIndex, setSelectedIndex] = useState(-1);
-
-useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    const totalItems = suggestions.length + recentSearches.length;
-    
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev < totalItems - 1 ? prev + 1 : 0));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev > 0 ? prev - 1 : totalItems - 1));
-        break;
-      case 'Enter':
-        if (selectedIndex >= 0) {
-          e.preventDefault();
-          selectItem(selectedIndex);
-        }
-        break;
-      case 'Escape':
-        handleClose();
-        break;
-    }
-  };
-  // ...
-}, [isOpen, suggestions, recentSearches, selectedIndex]); Навигация по подсказкам клавиатурой{isLoading && (
-  <div className="flex items-center gap-2 p-3 text-muted-foreground">
-    <Loader2 className="size-4 animate-spin" />
-    <span className="text-sm">Поиск...</span>
-  </div>
-)}// Группировка по категориям
-const groupedSuggestions = suggestions.reduce((acc, item) => {
-  const category = item.category || 'Результаты';
-  if (!acc[category]) acc[category] = [];
-  acc[category].push(item);
-  return acc;
-}, {} as Record<string, Suggestion[]>);
-
-// Рендер
-{Object.entries(groupedSuggestions).map(([category, items]) => (
-  <div key={category}>
-    <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50">
-      {category}
-    </div>
-    {items.map((item) => (
-      <SuggestionItem key={item.id} {...item} />
-    ))}
-  </div>
-))}// LocalStorage для истории
-const RECENT_SEARCHES_KEY = 'recent_searches';
-const MAX_RECENT_SEARCHES = 5;
-
-const saveToHistory = (query: string) => {
-  const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
-  const recent = stored ? JSON.parse(stored) : [];
-  const updated = [query, ...recent.filter((q: string) => q !== query)]
-    .slice(0, MAX_RECENT_SEARCHES);
-  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
-  setRecentSearches(updated);
-};
-
-const removeFromHistory = (query: string) => {
-  const updated = recentSearches.filter(q => q !== query);
-  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
-  setRecentSearches(updated);
-};
-
-const clearHistory = () => {
-  localStorage.removeItem(RECENT_SEARCHES_KEY);
-  setRecentSearches([]);
-};const MIN_SEARCH_LENGTH = 2;
-
-const shouldShowSuggestions = query.length >= MIN_SEARCH_LENGTH;Адаптивность
-Десктоп (md и выше):
-Inline expanding search
-Dropdown под полем ввода
-Мобильные (ниже md):
-Полноэкранный overlay
-Подсказки занимают весь экран
-Touch-friendly элементы (min-h-11)
-Props интерфейс (полный)interface SearchBarProps {
-  // Основные
-  placeholder?: string;
+model LoanPurpose {
+  id          String @id @default(cuid())
+  name        String
+  slug        String @unique
+  icon        String
+  description String
   
-  // Callbacks
-  onSearch?: (query: string) => void;           // Enter или клик на поиск
-  onSearchChange?: (query: string) => void;     // При изменении (debounced)
-  onSelectSuggestion?: (suggestion: Suggestion) => void;
-  
-  // Данные
-  suggestions?: Suggestion[];
-  recentSearches?: string[];
-  
-  // Состояние
-  isLoading?: boolean;
-  debounceMs?: number;          // Задержка debounce (default: 300)
-  minSearchLength?: number;     // Мин. символов (default: 2)
-  maxRecentSearches?: number;   // Макс. история (default: 5)
-  
-  // Фичи
-  showRecentSearches?: boolean;        // Показывать историю (default: true)
-  persistRecentSearches?: boolean;     // Сохранять в localStorage (default: true)
-  highlightMatches?: boolean;          // Подсветка совпадений (default: true)
-  
-  // Стилизация
-  className?: string;
-  dropdownClassName?: string;
-}src/
-├── components/
-│   ├── SearchBar.tsx          # Основной компонент
-│   ├── SearchBarDropdown.tsx  # Dropdown с подсказками
-│   ├── SuggestionItem.tsx     # Элемент подсказки
-│   └── Header.tsx             # Header с поиском
-├── hooks/
-│   └── useSearch.ts           # Хук с debounce, историей и т.д.
-└── lib/
-    └── search-utils.ts        # Утилиты (debounce, highlight)interface SearchBarProps {
-  // Основные
-  placeholder?: string;
-  
-  // Callbacks
-  onSearch?: (query: string) => void;           // Enter или клик на поиск
-  onSearchChange?: (query: string) => void;     // При изменении (debounced)
-  onSelectSuggestion?: (suggestion: Suggestion) => void;
-  
-  // Данные
-  suggestions?: Suggestion[];
-  recentSearches?: string[];
-  
-  // Состояние
-  isLoading?: boolean;
-  debounceMs?: number;          // Задержка debounce (default: 300)
-  minSearchLength?: number;     // Мин. символов (default: 2)
-  maxRecentSearches?: number;   // Макс. история (default: 5)
-  
-  // Фичи
-  showRecentSearches?: boolean;        // Показывать историю (default: true)
-  persistRecentSearches?: boolean;     // Сохранять в localStorage (default: true)
-  highlightMatches?: boolean;          // Подсветка совпадений (default: true)
-  
-  // Стилизация
-  className?: string;
-  dropdownClassName?: string;
-}src/
-├── components/
-│   ├── SearchBar.tsx          # Основной компонент
-│   ├── SearchBarDropdown.tsx  # Dropdown с подсказками
-│   ├── SuggestionItem.tsx     # Элемент подсказки
-│   └── Header.tsx             # Header с поиском
-├── hooks/
-│   └── useSearch.ts           # Хук с debounce, историей и т.д.
-└── lib/
-    └── search-utils.ts        # Утилиты (debounce, highlight)
-    /* Dropdown */
-.search-dropdown {
-  @apply absolute top-full left-0 right-0 mt-2;
-  @apply bg-white/95 dark:bg-neutral-900/95;
-  @apply backdrop-blur-lg;
-  @apply border border-neutral-200/50 dark:border-neutral-700/50;
-  @apply rounded-lg shadow-lg;
-  @apply max-h-80 overflow-y-auto;
-  @apply animate-in fade-in slide-in-from-top-2 duration-200;
+  speedWeight     Float @default(0.25)
+  approvalWeight  Float @default(0.25)
+  loyaltyWeight   Float @default(0.25)
+  rateWeight      Float @default(0.25)
 }
 
-/* Элемент подсказки */
-.suggestion-item {
-  @apply flex items-center gap-3 px-3 py-2;
-  @apply cursor-pointer;
-  @apply hover:bg-neutral-100 dark:hover:bg-neutral-800;
-  @apply transition-colors;
+
+Алгоритм Smart Score
+// Расчет шанса одобрения
+function calculateApprovalChance(baseApproval, amount, maxAmount) {
+  const ratio = amount / maxAmount;
+  const penalty = ratio * 15;
+  return Math.max(50, Math.min(99, baseApproval - penalty));
 }
 
-/* Выбранный элемент */
-.suggestion-item.selected {
-  @apply bg-neutral-100 dark:bg-neutral-800;
+// Smart Score для сортировки
+function calculateSmartScore(mfo, weights, rate, approval, amount, max) {
+  const rateScore = rate === 0 ? 1 : Math.max(0, 1 - rate / 2);
+  const approvalScore = approval / 100;
+  
+  return (
+    mfo.speedScore * weights.speedWeight +
+    mfo.loyaltyToDebts * weights.loyaltyWeight +
+    approvalScore * weights.approvalWeight +
+    rateScore * weights.rateWeight
+  ) * 100;
 }
 
-/* Подсветка совпадения */
-.highlight-match {
-  @apply font-semibold text-primary;
-}
 
-/* Категория */
-.suggestion-category {
-  @apply text-xs text-muted-foreground bg-muted/50;
-  @apply px-3 py-1.5 uppercase tracking-wide;
-}Демо-страница
-Обнови src/app/page.tsx:
 
-Header с поиском
-Демо-данные подсказок (массив объектов)
-История поиска из localStorage
-Индикатор загрузки (имитация API)
-Отображение выбранного результата
-Пример использования// В родительском компоненте
-const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-const [isLoading, setIsLoading] = useState(false);
+UI/UX Требования
+Стиль: Glassmorphism
+Декоративные элементы: blur-3xl круги
+Анимации (Framer Motion)
+Плавное появление элементов с задержкой
+Scale при hover на карточках
+Анимированные числа при изменении
+Пульсация на радаре
+Адаптивность
+Mobile-first подход
+Сетка: 1 колонка на мобильных, 3 колонки на desktop
+Левая колонка: ввод данных, Правая: результаты
 
-const handleSearchChange = async (query: string) => {
-  setIsLoading(true);
-  // Имитация API запроса
-  const results = await fetchSuggestions(query);
-  setSuggestions(results);
-  setIsLoading(false);
-};
 
-<SearchBar
-  placeholder="Поиск товаров..."
-  onSearch={handleSearch}
-  onSearchChange={handleSearchChange}
-  suggestions={suggestions}
-  isLoading={isLoading}
-  showRecentSearches={true}
-  persistRecentSearches={true}
-  highlightMatches={true}
-/>Важно
-НЕ пиши тесты
-НЕ создавай дополнительные роуты
-Используй существующие компоненты shadcn/ui (Button, Input, ScrollArea, Separator)Убедись что все анимации плавные
+Seed Data (МФО)
+Наполни базу из БД
+Критерии успеха
+Калькулятор работает без ошибок
+Анимации плавные (60fps)
+Данные загружаются с debounce 300ms
+UI адаптивен для всех устройств
+Код чистый, без TypeScript ошибок
+Важно
+НЕ создавай тестовые файлы
+Используй API routes, не server actions

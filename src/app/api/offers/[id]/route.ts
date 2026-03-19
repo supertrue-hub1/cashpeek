@@ -30,6 +30,7 @@ export async function GET(
       maxTerm: offer.maxTerm,
       baseRate: offer.baseRate,
       firstLoanRate: offer.firstLoanRate ?? undefined,
+      psk: offer.psk ?? undefined,
       decisionTime: offer.decisionTime,
       approvalRate: offer.approvalRate,
       payoutMethods: offer.payoutMethods ? JSON.parse(offer.payoutMethods) : [],

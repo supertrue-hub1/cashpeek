@@ -79,42 +79,38 @@ export function RatingCard({ mfo, rank, peopleRating, reviewsCount }: RatingCard
                 </span>
               </div>
 
-              {/* Logo & Info */}
-              <div className="flex items-start gap-4 flex-1 min-w-0">
-                {/* Logo */}
-                <div className="relative shrink-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-border bg-white flex items-center justify-center overflow-hidden">
-                    {mfo.logo ? (
-                      <img
-                        src={mfo.logo}
-                        alt={mfo.name}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <span className="text-2xl font-bold text-muted-foreground">
-                        {mfo.name.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  {mfo.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-green-500 border-2 border-card">
-                      <BadgeCheck className="h-3.5 w-3.5 text-white" />
-                    </div>
+              {/* Logo */}
+              <div className="relative shrink-0">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl border border-border bg-white flex items-center justify-center overflow-hidden">
+                  {mfo.logo ? (
+                    <img
+                      src={mfo.logo}
+                      alt={mfo.name}
+                      className="w-full h-full object-contain p-2"
+                    />
+                  ) : (
+                    <span className="text-xl font-bold text-muted-foreground">
+                      {mfo.name.charAt(0)}
+                    </span>
                   )}
                 </div>
+              </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold text-foreground truncate">
-                      {mfo.name}
-                    </h3>
-                    {mfo.isPopular && (
-                      <Badge variant="secondary" className="text-xs shrink-0">
-                        Популярное
-                      </Badge>
-                    )}
-                  </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold text-foreground truncate">
+                    {mfo.name}
+                  </h3>
+                  {mfo.isVerified && (
+                    <BadgeCheck className="h-4 w-4 text-green-500 shrink-0" />
+                  )}
+                  {mfo.isPopular && (
+                    <Badge variant="secondary" className="text-xs shrink-0">
+                      Популярное
+                    </Badge>
+                  )}
+                </div>
 
                   {/* Quick Stats */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -144,7 +140,6 @@ export function RatingCard({ mfo, rank, peopleRating, reviewsCount }: RatingCard
                       {displayReviewsCount} отзывов
                     </div>
                   </div>
-                </div>
               </div>
 
               {/* Stats Grid (Desktop) */}

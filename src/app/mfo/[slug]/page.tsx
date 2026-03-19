@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { Header, Footer } from '@/components/layout';
 import { db } from '@/lib/db';
 import { generateBreadcrumb } from '@/lib/seo/metadata';
@@ -10,7 +11,8 @@ import { getMfoTemplates } from '@/lib/seo/utils/text-templates';
 import { generateMfoKeywords } from '@/lib/seo/utils/keywords';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, CreditCard, Clock, Star, ExternalLink, Phone, Mail, Shield, Zap, Users } from 'lucide-react';
+import { ChevronRight, CreditCard, Clock, Star, ExternalLink, Phone, Mail, Shield, Zap, Users, Loader2 } from 'lucide-react';
+import { InteractiveCalculator } from '@/components/calculator/interactive-calculator';
 import Link from 'next/link';
 
 // ISR: обновление каждый час
@@ -366,19 +368,31 @@ export default async function MfoPage({
               {/* Sidebar */}
               <aside>
                 <div className="sticky top-24 space-y-6">
-                  {/* Quick CTA */}
-                  <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-6 border border-primary/10">
-                    <h3 className="font-semibold text-foreground mb-3">Быстрая заявка</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Заполните заявку за 5 минут и получите деньги на карту
-                    </p>
-                    <Button className="w-full gap-2" asChild>
-                      <a href={mfo.affiliateUrl || '#'} target="_blank" rel="noopener noreferrer nofollow">
-                        Получить {mfo.maxAmount?.toLocaleString('ru-RU')} ₽
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
+                  {/* Interactive Calculator */}
+                  <Suspense fallback={
+                    <div className="bg-muted rounded-xl p-6 flex items-center justify-center min-h-[300px]">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  }>
+                    <InteractiveCalculator
+                      offer={{
+                        id: mfo.id,
+                        name: mfo.name,
+                        slug: mfo.slug,
+                        logo: mfo.logo || undefined,
+                        affiliateUrl: mfo.affiliateUrl || undefined,
+                        minAmount: mfo.minAmount,
+                        maxAmount: mfo.maxAmount,
+                        minTerm: mfo.minTerm,
+                        maxTerm: mfo.maxTerm,
+                        baseRate: mfo.baseRate,
+                        firstLoanRate: mfo.firstLoanRate,
+                        decisionTime: mfo.decisionTime,
+                        approvalRate: mfo.approvalRate,
+                      }}
+                      redirectUrl={mfo.affiliateUrl || undefined}
+                    />
+                  </Suspense>
 
                   {/* Stats */}
                   <div className="bg-muted rounded-xl p-6">

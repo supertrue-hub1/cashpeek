@@ -55,6 +55,7 @@ const offerFormSchema = z.object({
   maxTerm: z.number().min(1, "Минимум 1 день"),
   baseRate: z.number().min(0, "Минимум 0%"),
   firstLoanRate: z.number().optional(),
+  psk: z.number().min(0).max(1000).optional(),
   decisionTime: z.number().min(0),
   approvalRate: z.number().min(0).max(100),
   
@@ -122,6 +123,7 @@ export default function NewOfferPage() {
       maxTerm: 30,
       baseRate: 0.8,
       firstLoanRate: 0,
+      psk: undefined,
       decisionTime: 5,
       approvalRate: 90,
       badCreditOk: true,
@@ -585,6 +587,28 @@ export default function NewOfferPage() {
 
                     <FormField
                       control={form.control}
+                      name="psk"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ПСК (% годовых)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              step="0.1"
+                              placeholder="365.0"
+                              value={field.value ?? ''}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
                       name="firstLoanRate"
                       render={({ field }) => (
                         <FormItem>
@@ -605,26 +629,26 @@ export default function NewOfferPage() {
                         </FormItem>
                       )}
                     />
-                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="decisionTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Время решения (минуты)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number"
-                            placeholder="0 = мгновенно"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="decisionTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Время решения (минуты)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              placeholder="0 = мгновенно"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 

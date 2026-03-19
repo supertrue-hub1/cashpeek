@@ -20,24 +20,10 @@ export const metadata: Metadata = {
     'сравнение МФО',
     'официальный рейтинг МФО',
   ],
-  openGraph: {
-    title: 'Народный рейтинг МФО — CashPeek',
-    description:
-      'Честные отзывы и оценки заёмщиков. Выбирайте лучшую МФО на основе реального опыта.',
-    type: 'website',
+  robots: {
+    index: false,
+    follow: true,
   },
-  alternates: {
-    canonical: '/rating',
-  },
-};
-
-// Schema.org для SEO
-const ratingSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  name: 'Народный рейтинг МФО',
-  description: 'Рейтинг микрофинансовых организаций на основе отзывов заёмщиков',
-  numberOfItems: 0, // Будет обновлено динамически
 };
 
 export default async function RatingPage() {
@@ -102,19 +88,7 @@ export default async function RatingPage() {
   };
 
   return (
-    <>
-      {/* Schema.org */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            ...ratingSchema,
-            numberOfItems: offers.length,
-          }),
-        }}
-      />
-
-      <div className="min-h-screen">
+    <div className="min-h-screen">
         {/* Hero Section */}
         <HeroRating
           totalMfo={stats.totalMfo}
@@ -132,6 +106,5 @@ export default async function RatingPage() {
         {/* Reviews Section */}
         <ReviewsSection showAll />
       </div>
-    </>
   );
 }
