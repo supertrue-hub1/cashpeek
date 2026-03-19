@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import Image from 'next/image'
 import { 
   ArrowRight, 
   ArrowLeft,
@@ -279,13 +278,10 @@ function StepResults({
                   isTop ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-muted'
                 }`}>
                   {offer.logo ? (
-                    <Image 
+                    <img 
                       src={offer.logo} 
                       alt={offer.name} 
-                      width={40} 
-                      height={40}
-                      className="object-contain"
-                      sizes="48px"
+                      className="w-10 h-10 object-contain"
                     />
                   ) : (
                     <span className={`text-lg font-bold ${isTop ? 'text-orange-600' : 'text-primary'}`}>
