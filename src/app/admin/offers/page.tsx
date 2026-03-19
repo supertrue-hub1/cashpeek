@@ -515,7 +515,6 @@ export default function OffersPage() {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -898,35 +897,6 @@ export default function OffersPage() {
                     )}
                   </TableBody>
                 </Table>
-              </div>
-
-              {/* Пагинация */}
-              <div className="flex items-center justify-between space-x-2 py-4">
-                <div className="text-sm text-muted-foreground">
-                  Показано {table.getRowModel().rows.length} из {filteredData.length}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                  >
-                    Назад
-                  </Button>
-                  <div className="text-sm text-muted-foreground">
-                    Страница {table.getState().pagination.pageIndex + 1} из{" "}
-                    {table.getPageCount()}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                  >
-                    Вперёд
-                  </Button>
-                </div>
               </div>
             </>
           )}
