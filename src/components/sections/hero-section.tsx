@@ -18,6 +18,7 @@ import LoanQuiz from '@/components/LoanQuiz';
 
 interface HeroSectionProps {
   className?: string;
+  totalOffers?: number;
 }
 
 const MICRO_BENEFITS = [
@@ -26,7 +27,24 @@ const MICRO_BENEFITS = [
   { icon: RefreshCw, value: 'ежедневно', label: 'обновление' },
 ];
 
-export function HeroSection({ className }: HeroSectionProps) {
+export function HeroSection({ className, totalOffers }: HeroSectionProps) {
+  // Форматируем количество офферов
+  const offersText = React.useMemo(() => {
+    if (!totalOffers) return '8+';
+    if (totalOffers >= 100) return '100+';
+    if (totalOffers >= 10) return `${totalOffers}+`;
+    return String(totalOffers);
+  }, [totalOffers]);
+
+  // Обновляем MICRO_BENEFITS с реальным количеством
+  const benefits = React.useMemo(() => {
+    const result = [...MICRO_BENEFITS];
+    if (totalOffers !== undefined && totalOffers > 0) {
+      result[0] = { ...result[0], value: offersText };
+    }
+    return result;
+  }, [totalOffers, offersText]);
+
   return (
     <section className={cn('relative overflow-hidden py-10 sm:py-14', className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,20 +75,23 @@ export function HeroSection({ className }: HeroSectionProps) {
             {/* Быстрые теги */}
             <div className="mb-5 flex flex-wrap gap-2 lg:mb-6">
               {[
-                { id: 'card', label: 'На карту', icon: CreditCard },
-                { id: 'zero', label: 'Первый займ 0%', icon: Zap },
-                { id: 'urgent', label: 'Срочно', icon: Clock },
-                { id: 'bad-credit', label: 'С плохой КИ', icon: ShieldCheck },
+                { id: 'card', label: 'На карту', icon: CreditCard, href: '/zaimy-na-kartu' },
+                { id: 'zero', label: 'Первый займ 0%', icon: Zap, href: '/zaimy-bez-protsentov' },
+                { id: 'urgent', label: 'Срочно', icon: Clock, href: '/srochnye-zaimy' },
+                { id: 'bad-credit', label: 'С плохой КИ', icon: ShieldCheck, href: '/zaimy-s-plokhoy-ki' },
               ].map((tag) => {
                 const Icon = tag.icon;
                 return (
                   <Badge
                     key={tag.id}
+                    asChild
                     variant="secondary"
                     className="gap-1 px-2.5 py-1 text-xs font-medium cursor-pointer bg-muted text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary border-0"
                   >
-                    <Icon className="h-3 w-3" />
-                    {tag.label}
+                    <a href={tag.href}>
+                      <Icon className="h-3 w-3" />
+                      {tag.label}
+                    </a>
                   </Badge>
                 );
               })}
@@ -78,7 +99,7 @@ export function HeroSection({ className }: HeroSectionProps) {
 
             {/* Микро-преимущества */}
             <div className="flex flex-wrap gap-4">
-              {MICRO_BENEFITS.map((benefit, index) => {
+              {benefits.map((benefit, index) => {
                 const Icon = benefit.icon;
                 return (
                   <div key={index} className="flex items-center gap-2.5">

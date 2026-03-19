@@ -64,8 +64,14 @@ function transformOffer(offer: any): Offer {
 }
 
 // Server component - fetches offers from DB
-async function getOffers(): Promise<Offer[]> {
+async function getOffers(): Promise<{ offers: Offer[]; totalCount: number }> {
   try {
+    // Получаем общее количество опубликованных офферов
+    const totalCount = await db.loanOffer.count({
+      where: { status: 'published' },
+    });
+
+    // Получаем только 15 для главной страницы
     const offers = await db.loanOffer.findMany({
       where: { 
         status: 'published',
@@ -76,24 +82,25 @@ async function getOffers(): Promise<Offer[]> {
         { sortOrder: 'asc' },
         { rating: 'desc' },
       ],
+      take: 15,
     });
 
-    return offers.map(transformOffer);
+    return { offers: offers.map(transformOffer), totalCount };
   } catch (error) {
     console.error('Failed to fetch offers:', error);
-    return [];
+    return { offers: [], totalCount: 0 };
   }
 }
 
 export default async function Home() {
-  const offers = await getOffers();
+  const { offers, totalCount } = await getOffers();
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
       
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection totalOffers={totalCount} />
         <ScenarioSection scenarios={scenarios} />
         {offers.length > 0 ? (
           <>

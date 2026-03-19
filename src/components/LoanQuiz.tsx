@@ -174,7 +174,12 @@ function StepTerm({
       <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-center">
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="text-xs text-muted-foreground">К возврату (0,8%):</span>
-          <span className="text-xs font-bold text-green-600">(Первый займ 0%)</span>
+          <a 
+            href="/zaimy-bez-protsentov" 
+            className="text-xs font-bold text-green-600 hover:text-green-700 hover:underline cursor-pointer"
+          >
+            (Первый займ 0%)
+          </a>
         </div>
         <div className="text-xl font-bold text-emerald-600">
           {formatAmount(repayment)} ₽
