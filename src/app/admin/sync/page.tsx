@@ -301,7 +301,7 @@ export default function SyncPage() {
     setSettingsOpen(true)
   }
 
-  const handleSaveSettings = async (e: React.MouseEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
@@ -558,36 +558,38 @@ export default function SyncPage() {
               {selectedSource?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="apiUrl">API URL</Label>
-              <Input
-                id="apiUrl"
-                value={apiUrl}
-                onChange={(e) => setApiUrl(e.target.value)}
-                placeholder="https://api.example.com/v1"
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveSettings(e); }}>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="apiUrl">API URL</Label>
+                <Input
+                  id="apiUrl"
+                  value={apiUrl}
+                  onChange={(e) => setApiUrl(e.target.value)}
+                  placeholder="https://api.example.com/v1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apiKey">API Key</Label>
+                <Input
+                  id="apiKey"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Введите API ключ"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="apiKey">API Key</Label>
-              <Input
-                id="apiKey"
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Введите API ключ"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsOpen(false)} type="button">
-              Отмена
-            </Button>
-            <Button onClick={(e) => handleSaveSettings(e)} disabled={isSaving} type="button">
-              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Сохранить и подключить
-            </Button>
-          </DialogFooter>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setSettingsOpen(false)} type="button">
+                Отмена
+              </Button>
+              <Button onClick={(e) => handleSaveSettings(e)} disabled={isSaving} type="submit">
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Сохранить и подключить
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
