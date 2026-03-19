@@ -1107,15 +1107,15 @@ export function OfferEditDialog({ offer, open, onOpenChange, onSave }: OfferEdit
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <div className="text-muted-foreground">Просмотры</div>
-                          <div className="font-medium">{displayOffer.views.toLocaleString()}</div>
+                          <div className="font-medium">{(displayOffer.views ?? 0).toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Клики</div>
-                          <div className="font-medium">{displayOffer.clicks.toLocaleString()}</div>
+                          <div className="font-medium">{(displayOffer.clicks ?? 0).toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Конверсии</div>
-                          <div className="font-medium">{displayOffer.conversions}</div>
+                          <div className="font-medium">{displayOffer.conversions ?? 0}</div>
                         </div>
                       </div>
                     </div>
