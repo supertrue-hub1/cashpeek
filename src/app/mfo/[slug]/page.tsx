@@ -393,6 +393,7 @@ export default async function MfoPage({
                         maxTerm: mfo.maxTerm,
                         baseRate: mfo.baseRate,
                         firstLoanRate: mfo.firstLoanRate,
+                        psk: mfo.psk ?? undefined,
                         decisionTime: mfo.decisionTime,
                         approvalRate: mfo.approvalRate,
                       }}

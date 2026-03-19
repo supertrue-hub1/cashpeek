@@ -46,6 +46,7 @@ export default async function RatingPage() {
       maxTerm: true,
       baseRate: true,
       firstLoanRate: true,
+      psk: true,
       isFeatured: true,
       viewsCount: true,
       clicksCount: true,
@@ -72,6 +73,7 @@ export default async function RatingPage() {
     maxTerm: offer.maxTerm,
     baseRate: offer.baseRate,
     firstLoanRate: offer.firstLoanRate,
+    psk: offer.psk,
     isVerified: offer.clicksCount > 100, // Заглушка: проверенные
     isPopular: offer.isFeatured,
     peopleRating: offer.rating, // Будет обновлено из отзывов

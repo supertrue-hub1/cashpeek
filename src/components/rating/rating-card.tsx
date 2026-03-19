@@ -123,7 +123,7 @@ export function RatingCard({ mfo, rank, peopleRating, reviewsCount }: RatingCard
                     </span>
                     <span className="hidden md:inline">•</span>
                     <span className="hidden md:inline">
-                      от {(mfo.firstLoanRate ?? mfo.baseRate)}% в день
+                      ПСК: {mfo.psk ? `${mfo.psk}%` : `до ${Math.round((mfo.baseRate || 0.8) * 365)}%`}
                     </span>
                   </div>
 

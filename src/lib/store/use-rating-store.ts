@@ -33,6 +33,7 @@ export interface MfoRating {
   maxTerm: number;
   baseRate: number;
   firstLoanRate: number | null;
+  psk: number | null;
   isVerified: boolean;
   isPopular: boolean;
   peopleRating: number; // Народный рейтинг (на основе отзывов)

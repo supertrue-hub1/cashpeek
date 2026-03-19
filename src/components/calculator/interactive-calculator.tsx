@@ -53,6 +53,8 @@ interface LoanOffer {
   baseRate: number;
   /** Ставка для первого займа (0 = бесплатно) */
   firstLoanRate?: number | null;
+  /** ПСК (% годовых) */
+  psk?: number;
   /** Время принятия решения (минут) */
   decisionTime?: number;
   /** Процент одобрения */
