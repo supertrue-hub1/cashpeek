@@ -153,14 +153,22 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
   const [offer, setOffer] = React.useState<OfferData | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [isSaving, setIsSaving] = React.useState(false)
+  const [isFormReady, setIsFormReady] = React.useState(false)
   
   React.useEffect(() => {
     params.then(p => setId(p.id))
   }, [params])
   
+  // Сброс флага ready при смене ID оффера
+  React.useEffect(() => {
+    if (id) {
+      setIsFormReady(false)
+    }
+  }, [id])
+
   React.useEffect(() => {
     if (!id) return
-
+    
     const fetchOffer = async () => {
       setIsLoading(true)
       try {
@@ -211,8 +219,9 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
     },
   })
 
+  // Сброс формы только при первом получении данных оффера
   React.useEffect(() => {
-    if (offer) {
+    if (offer && !isFormReady) {
       form.reset({
         name: offer.name,
         slug: offer.slug,
@@ -238,8 +247,9 @@ export default function OfferEditPage({ params }: { params: Promise<{ id: string
         decisionTime: offer.decisionTime,
         approvalRate: offer.approvalRate,
       })
+      setIsFormReady(true)
     }
-  }, [offer, form])
+  }, [offer, form, isFormReady])
 
   const onSubmit = async (data: OfferFormValues) => {
     if (!id) return
