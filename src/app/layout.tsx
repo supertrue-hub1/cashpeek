@@ -99,6 +99,8 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
+        {/* Yandex Webmaster Verification */}
+        <meta name="yandex-verification" content="b93151bbba0cbdb0" />
         {/* Глобальные Schema.org схемы для всех страниц */}
         <OrganizationSchema />
         <WebSiteSchema />
