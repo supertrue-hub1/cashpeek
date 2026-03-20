@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/providers/session-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { ChatWidget } from "@/components/chat-widget";
 import { CookieBanner } from "@/components/shared/cookie-banner";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -81,6 +82,8 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
+        {/* Google Analytics 4 */}
+        <GoogleAnalytics />
         {/* Глобальные Schema.org схемы для всех страниц */}
         <OrganizationSchema />
         <WebSiteSchema />

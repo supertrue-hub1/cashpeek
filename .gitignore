@@ -52,3 +52,6 @@ server.log
 # SEO data (large files)
 /seo/*.csv
 /seo/*.zip
+
+# Google Cloud credentials
+credentials*.json
