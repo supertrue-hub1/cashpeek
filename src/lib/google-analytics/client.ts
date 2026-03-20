@@ -21,19 +21,41 @@ function getConfig(): GA4Config {
   const propertyId = process.env.GA4_PROPERTY_ID
   const credentialsJson = process.env.GA4_CREDENTIALS
 
+  console.log('[GA4 Config] Checking environment variables...', {
+    hasPropertyId: !!propertyId,
+    hasCredentials: !!credentialsJson,
+    credentialsLength: credentialsJson?.length || 0,
+  })
+
   if (!propertyId) {
-    throw new GA4ApiError('GA4_PROPERTY_ID не настроен', 401)
+    throw new GA4ApiError('GA4_PROPERTY_ID не настроен. Добавьте GA4_PROPERTY_ID в .env', 401)
   }
 
   if (!credentialsJson) {
-    throw new GA4ApiError('GA4_CREDENTIALS не настроен', 401)
+    throw new GA4ApiError('GA4_CREDENTIALS не настроен. Добавьте GA4_CREDENTIALS в .env', 401)
   }
 
   let credentials: GA4Credentials
   try {
     credentials = JSON.parse(credentialsJson)
-  } catch {
-    throw new GA4ApiError('GA4_CREDENTIALS содержит невалидный JSON', 400)
+    console.log('[GA4 Config] Credentials parsed successfully', {
+      hasClientEmail: !!credentials.client_email,
+      hasPrivateKey: !!credentials.private_key,
+    })
+  } catch (parseError) {
+    console.error('[GA4 Config] Failed to parse credentials:', parseError)
+    throw new GA4ApiError(
+      'GA4_CREDENTIALS содержит невалидный JSON. Проверьте формат: {"type":"service_account",...}',
+      400
+    )
+  }
+
+  if (!credentials.client_email) {
+    throw new GA4ApiError('GA4_CREDENTIALS не содержит client_email', 400)
+  }
+
+  if (!credentials.private_key) {
+    throw new GA4ApiError('GA4_CREDENTIALS не содержит private_key', 400)
   }
 
   return { propertyId, credentials }
@@ -48,7 +70,9 @@ let analyticsClient: BetaAnalyticsDataClient | null = null
 function getClient(): BetaAnalyticsDataClient {
   if (analyticsClient) return analyticsClient
 
-  const { credentials } = getConfig()
+  const { propertyId, credentials } = getConfig()
+  
+  console.log('[GA4 Client] Creating client for property:', propertyId)
   
   analyticsClient = new BetaAnalyticsDataClient({
     credentials: {
@@ -57,6 +81,7 @@ function getClient(): BetaAnalyticsDataClient {
     },
   })
 
+  console.log('[GA4 Client] Client created successfully')
   return analyticsClient
 }
 
@@ -130,23 +155,36 @@ async function runReport(params: RunReportParams) {
   const client = getClient()
   const { propertyId } = getConfig()
 
-  const [response] = await client.runReport({
+  console.log('[GA4 Report] Running report:', {
     property: `properties/${propertyId}`,
-    dateRanges: [
-      {
-        startDate: params.dateRange?.startDate || '7daysAgo',
-        endDate: params.dateRange?.endDate || 'yesterday',
-      },
-    ],
-    metrics: params.metrics.map((m) => ({ name: m })),
-    dimensions: params.dimensions?.map((d) => ({ name: d })),
-    dimensionFilter: params.dimensionFilter,
-    limit: params.limit || 100,
-    offset: params.offset,
-    orderBys: params.orderBys,
+    metrics: params.metrics,
+    dimensions: params.dimensions,
+    dateRange: params.dateRange,
   })
 
-  return response
+  try {
+    const [response] = await client.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [
+        {
+          startDate: params.dateRange?.startDate || '7daysAgo',
+          endDate: params.dateRange?.endDate || 'yesterday',
+        },
+      ],
+      metrics: params.metrics.map((m) => ({ name: m })),
+      dimensions: params.dimensions?.map((d) => ({ name: d })),
+      dimensionFilter: params.dimensionFilter,
+      limit: params.limit || 100,
+      offset: params.offset,
+      orderBys: params.orderBys,
+    })
+
+    console.log('[GA4 Report] Success, rows:', response.rows?.length || 0)
+    return response
+  } catch (error) {
+    console.error('[GA4 Report] Error:', error)
+    throw error
+  }
 }
 
 // ============================================
