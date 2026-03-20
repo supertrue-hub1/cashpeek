@@ -50,6 +50,14 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     siteName: "CashPeek",
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru'}/og-image.svg`,
+        width: 1200,
+        height: 630,
+        alt: "CashPeek — Сравнение займов онлайн",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -71,6 +79,16 @@ export const metadata: Metadata = {
     yandex: "b93151bbba0cbdb0",
     // google: "your-google-verification-code",
   },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru',
+  },
+  other: {
+    "theme-color": "#ffffff",
+    "color-scheme": "light dark",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+  },
 };
 
 export default function RootLayout({
@@ -84,6 +102,17 @@ export default function RootLayout({
         {/* Глобальные Schema.org схемы для всех страниц */}
         <OrganizationSchema />
         <WebSiteSchema />
+        {/* Preconnect для внешних ресурсов */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://mc.yandex.ru" />
+        {/* DNS Prefetch */}
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        {/* Manifest для PWA */}
+        <link rel="manifest" href="/manifest.json" />
+        {/* RSS Feed */}
+        <link rel="alternate" type="application/rss+xml" title="CashPeek Blog RSS" href="/rss.xml" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
