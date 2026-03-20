@@ -13,7 +13,9 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  BarChart3,
 } from "lucide-react"
+import { MetricaStats } from "@/components/admin/metrica-stats"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -271,6 +273,10 @@ export default function AnalyticsPage() {
           <TabsTrigger value="overview">Обзор</TabsTrigger>
           <TabsTrigger value="offers">По офферам</TabsTrigger>
           <TabsTrigger value="funnel">Воронка</TabsTrigger>
+          <TabsTrigger value="metrica">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Метрика
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -487,6 +493,10 @@ export default function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="metrica" className="space-y-4">
+          <MetricaStats />
         </TabsContent>
       </Tabs>
     </div>
