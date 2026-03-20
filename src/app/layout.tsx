@@ -82,8 +82,6 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        {/* Google Analytics 4 */}
-        <GoogleAnalytics />
         {/* Глобальные Schema.org схемы для всех страниц */}
         <OrganizationSchema />
         <WebSiteSchema />
@@ -91,6 +89,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        {/* Google Analytics 4 */}
+        <GoogleAnalytics />
         <SessionProvider>
           <ThemeProvider
             attribute="class"
