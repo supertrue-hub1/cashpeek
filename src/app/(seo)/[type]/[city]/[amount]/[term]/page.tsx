@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { SeoPageContent } from '@/components/seo/SeoPageContent';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { Breadcrumbs } from '@/components/seo/breadcrumbs';
+import { SeoText } from '@/components/seo/seo-text';
+import { generateSeoMetadata, generateAlternates, generateCanonicalUrl } from '@/lib/seo/advanced-metadata';
+import { declineCity, declineLoanType } from '@/lib/seo/declensions';
 
 // ISR: разрешает динамические параметры
 export const dynamicParams = true;
@@ -47,14 +51,15 @@ export async function generateStaticParams() {
   }
 }
 
-// Генерация метаданных
+// Генерация метаданных с годом и CTA
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ type: string; city: string; amount: string; term: string }>;
 }): Promise<Metadata> {
-  const { type, city } = await params;
+  const { type, city, amount, term } = await params;
 
+  // Получаем данные страницы
   const page = await db.seoCombination.findFirst({
     where: {
       citySlug: city,
@@ -67,6 +72,7 @@ export async function generateMetadata({
       pageDescription: true,
       city: true,
       loanType: true,
+      amountValue: true,
     },
   });
 
@@ -76,17 +82,34 @@ export async function generateMetadata({
     };
   }
 
+  // Парсим сумму из URL
+  const amountValue = parseInt(amount.replace('-rubley', ''), 10) || page.amountValue || 50000;
+
+  // Генерируем расширенные мета-теги с годом и CTA
+  const seoMeta = generateSeoMetadata({
+    loanType: page.loanType,
+    city: page.city,
+    amount: amountValue,
+  });
+
+  // Канонический URL
+  const path = `/${type}/${city}`;
+  const canonical = generateCanonicalUrl(path);
+  const alternates = generateAlternates(path);
+
   return {
-    title: page.pageTitle,
-    description: page.pageDescription,
+    title: seoMeta.title,
+    description: seoMeta.description,
     openGraph: {
-      title: page.pageTitle,
-      description: page.pageDescription,
+      title: seoMeta.ogTitle,
+      description: seoMeta.ogDescription,
       type: 'website',
       locale: 'ru_RU',
+      url: canonical,
     },
-    alternates: {
-      canonical: `/${type}/${city}`,
+    alternates,
+    other: {
+      'robots': 'index, follow',
     },
   };
 }
@@ -97,7 +120,7 @@ export default async function SeoDynamicPage({
 }: {
   params: Promise<{ type: string; city: string; amount: string; term: string }>;
 }) {
-  const { type, city } = await params;
+  const { type, city, amount, term } = await params;
 
   // Получаем данные страницы
   const pageData = await db.seoCombination.findFirst({
@@ -127,6 +150,19 @@ export default async function SeoDynamicPage({
     notFound();
   }
 
+  // Склоняем названия для Breadcrumbs
+  const cityDeclined = declineCity(pageData.city);
+  const typeDeclined = declineLoanType(pageData.loanType);
+
+  // URL для Breadcrumbs
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cashpeek.ru';
+  const breadcrumbItems = [
+    { name: 'Главная', href: baseUrl },
+    { name: 'Займы', href: `${baseUrl}/zaimy` },
+    { name: typeDeclined.nominative, href: `${baseUrl}/zaimy/${type}` },
+    { name: `в ${cityDeclined.prepositional}`, href: `${baseUrl}/zaimy/${type}/v-${city}` },
+  ];
+
   // Получаем офферы для этой страницы
   const offers = await getRelevantOffers(pageData.amountValue);
 
@@ -153,12 +189,28 @@ export default async function SeoDynamicPage({
         }}
       />
 
+      {/* Breadcrumbs с Schema.org */}
+      <div className="container mx-auto px-4 py-4">
+        <Breadcrumbs 
+          items={breadcrumbItems} 
+          enableSchema={true}
+        />
+      </div>
+
       <SeoPageContent
         pageData={pageData}
         offers={offers}
         relatedTypes={relatedTypes}
         relatedCities={relatedCities}
       />
+
+      {/* SEO-текст со склонениями */}
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <SeoText
+          loanType={pageData.loanType}
+          city={pageData.city}
+        />
+      </div>
     </>
   );
 }
