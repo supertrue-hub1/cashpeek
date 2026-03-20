@@ -8,6 +8,7 @@ import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { ChatWidget } from "@/components/chat-widget";
 import { CookieBanner } from "@/components/shared/cookie-banner";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { YMProvider, YMAnalytics } from "@/components/analytics/yandex-metrika";
 import { YandexMetricaNoscript } from "@/components/analytics/yandex-metrica-noscript";
 
 const geistSans = Geist({
@@ -123,6 +124,9 @@ export default function RootLayout({
       >
         {/* Google Analytics 4 + Yandex.Metrica */}
         <GoogleAnalytics />
+        <YMProvider>
+          <YMAnalytics />
+        </YMProvider>
         <YandexMetricaNoscript />
         <SessionProvider>
           <ThemeProvider
