@@ -3,20 +3,20 @@
 import Script from "next/script"
 
 /**
- * Google Analytics 4 Component
- * Measurement ID: G-ED5WFL7PCW
+ * Google Analytics 4 + Yandex.Metrica Component
+ * 
+ * GA4 Measurement ID: G-ED5WFL7PCW
+ * Yandex.Metrica ID: 101294728
  */
 export function GoogleAnalytics() {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-ED5WFL7PCW"
-
-  // Рендерим всегда, если есть measurementId
-  // В development режиме данные не будут отправляться в GA4 debug view
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-ED5WFL7PCW"
+  const ymId = process.env.NEXT_PUBLIC_YM_ID || "101294728"
 
   return (
     <>
       {/* Google tag (gtag.js) */}
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
         strategy="afterInteractive"
       />
       <Script id="google-analytics" strategy="afterInteractive">
@@ -24,9 +24,28 @@ export function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${measurementId}', {
+          gtag('config', '${gaMeasurementId}', {
             page_path: window.location.pathname,
             send_page_view: true
+          });
+        `}
+      </Script>
+      
+      {/* Yandex.Metrica */}
+      <Script id="yandex-metrica" strategy="afterInteractive">
+        {`
+          (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+          (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+          
+          ym(${ymId}, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true,
+            ecommerce:"dataLayer"
           });
         `}
       </Script>

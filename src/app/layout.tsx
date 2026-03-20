@@ -8,6 +8,7 @@ import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { ChatWidget } from "@/components/chat-widget";
 import { CookieBanner } from "@/components/shared/cookie-banner";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { YandexMetricaNoscript } from "@/components/analytics/yandex-metrica-noscript";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -119,8 +120,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {/* Google Analytics 4 */}
+        {/* Google Analytics 4 + Yandex.Metrica */}
         <GoogleAnalytics />
+        <YandexMetricaNoscript />
         <SessionProvider>
           <ThemeProvider
             attribute="class"
