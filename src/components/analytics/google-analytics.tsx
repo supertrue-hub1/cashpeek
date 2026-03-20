@@ -9,10 +9,8 @@ import Script from "next/script"
 export function GoogleAnalytics() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-ED5WFL7PCW"
 
-  // Не рендерить в development
-  if (process.env.NODE_ENV === "development") {
-    return null
-  }
+  // Рендерим всегда, если есть measurementId
+  // В development режиме данные не будут отправляться в GA4 debug view
 
   return (
     <>
@@ -28,6 +26,7 @@ export function GoogleAnalytics() {
           gtag('js', new Date());
           gtag('config', '${measurementId}', {
             page_path: window.location.pathname,
+            send_page_view: true
           });
         `}
       </Script>
