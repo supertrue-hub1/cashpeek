@@ -299,7 +299,6 @@ export function SEOLoanPage({
       {/* Offers Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="text-center mb-6">
-        <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-foreground mb-2">
             {sortedOffers.length} {sortedOffers.length === 1 ? 'предложение' : sortedOffers.length < 5 ? 'предложения' : 'предложений'}
           </h2>
@@ -342,7 +341,6 @@ export function SEOLoanPage({
             </Button>
           </Card>
         )}
-      </div>
       </div>
 
       {/* Features */}
