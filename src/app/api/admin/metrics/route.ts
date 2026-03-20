@@ -11,6 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+
+// Принудительно динамический route (не статический)
+export const dynamic = 'force-dynamic'
 import { metricaQueries } from '@/lib/metrica/queries'
 import { MetricaApiError } from '@/lib/metrica/types'
 
@@ -168,8 +171,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * Настройки кэширования
- * Next.js будет кэшировать ответы на основе настроек в metricaClient
- */
-export const revalidate = 900 // 15 минут
