@@ -305,6 +305,8 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
         </CardContent>
 
         <CardFooter className="p-4 pt-0 gap-2">
+          {/* Кнопка "Получить" скрыта - для отладки/восстановления раскомментировать */}
+          {/* 
           <Button
             asChild
             className="flex-1 h-8"
@@ -319,10 +321,11 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               Получить
             </a>
           </Button>
+          */}
           <Button
             variant="outline"
             onClick={handleOpenModal}
-            className="h-8 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="h-8 border-border text-muted-foreground hover:bg-accent hover:text-foreground w-full"
             size="sm"
           >
             Подробнее
@@ -347,7 +350,8 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             </div>
           </DialogHeader>
 
-          {/* Sticky CTA button for mobile */}
+          {/* Sticky CTA button for mobile - скрыто */}
+          {/* 
           <div className="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background border-b border-border sm:hidden">
             <Button asChild className="w-full" size="lg">
               <a 
@@ -361,6 +365,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               </a>
             </Button>
           </div>
+          */}
 
           <Tabs defaultValue="info" className="mt-4">
             <TabsList className="grid grid-cols-3">
