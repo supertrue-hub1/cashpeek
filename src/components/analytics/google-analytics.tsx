@@ -10,7 +10,7 @@ import Script from "next/script"
  */
 export function GoogleAnalytics() {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-ED5WFL7PCW"
-  const ymId = process.env.NEXT_PUBLIC_YM_ID || "101294728"
+  const ymId = process.env.NEXT_PUBLIC_YM_ID || "107712908"
 
   return (
     <>
