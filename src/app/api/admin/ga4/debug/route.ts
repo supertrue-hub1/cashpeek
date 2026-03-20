@@ -64,7 +64,7 @@ export async function GET() {
     const [response] = await client.runReport({
       property: `properties/${propertyId}`,
       dateRanges: [{ startDate: 'yesterday', endDate: 'yesterday' }],
-      metrics: [{ name: 'users' }],
+      metrics: [{ name: 'totalUsers' }], // Используем totalUsers вместо users
       limit: 1,
     })
 

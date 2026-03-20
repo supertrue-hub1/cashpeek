@@ -171,7 +171,7 @@ export interface CacheEntry<T> {
 
 /** Основные метрики GA4 */
 export const GA4_METRICS = {
-  users: 'users',
+  users: 'totalUsers', // Изменили с 'users' на 'totalUsers'
   newUsers: 'newUsers',
   sessions: 'sessions',
   pageviews: 'screenPageViews',
@@ -180,6 +180,7 @@ export const GA4_METRICS = {
   sessionDuration: 'averageSessionDuration',
   bounceRate: 'bounceRate',
   engagements: 'engagedSessions',
+  activeUsers: 'activeUsers',
 } as const
 
 /** Измерения GA4 */
