@@ -534,7 +534,7 @@ export function SmartCalculator() {
           </div>
 
           {/* Results Grid */}
-          <div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h3 className="text-lg font-semibold text-foreground mb-4">
               Все предложения ({filteredResults.length})
             </h3>
