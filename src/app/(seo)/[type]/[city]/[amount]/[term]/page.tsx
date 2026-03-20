@@ -5,8 +5,15 @@ import { SeoPageContent } from '@/components/seo/SeoPageContent';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Breadcrumbs } from '@/components/seo/breadcrumbs';
 import { SeoText } from '@/components/seo/seo-text';
+import { CrossLinking } from '@/components/seo/cross-linking';
 import { generateSeoMetadata, generateAlternates, generateCanonicalUrl } from '@/lib/seo/advanced-metadata';
 import { declineCity, declineLoanType } from '@/lib/seo/declensions';
+import {
+  getOffersForSeoPage,
+  getOffersCountForSeoPage,
+  getRelatedLoanTypes,
+  getRelatedCities,
+} from '@/lib/seo/page-data';
 
 // ISR: разрешает динамические параметры
 export const dynamicParams = true;
@@ -51,7 +58,7 @@ export async function generateStaticParams() {
   }
 }
 
-// Генерация метаданных с годом и CTA
+// Генерация метаданных с годом и CTA + Dynamic NoIndex для пустых страниц
 export async function generateMetadata({
   params,
 }: {
@@ -84,6 +91,31 @@ export async function generateMetadata({
 
   // Парсим сумму из URL
   const amountValue = parseInt(amount.replace('-rubley', ''), 10) || page.amountValue || 50000;
+
+  // ⚠️ DYNAMIC NOINDEX: Проверяем количество офферов
+  const offersCount = await getOffersCountForSeoPage(amountValue);
+  const isEmptyPage = offersCount === 0;
+
+  // Если страница пустая - возвращаем noindex и canonical на родителя
+  if (isEmptyPage) {
+    const parentPath = `/${type}`;
+    const canonical = generateCanonicalUrl(parentPath);
+    
+    return {
+      title: `Займы ${page.loanType} — все предложения`,
+      description: 'Извините, в данный момент нет доступных предложений. Посмотрите другие типы займов.',
+      robots: {
+        index: false,
+        follow: false,
+      },
+      alternates: {
+        canonical,
+        languages: {
+          'ru': canonical,
+        },
+      },
+    };
+  }
 
   // Генерируем расширенные мета-теги с годом и CTA
   const seoMeta = generateSeoMetadata({
@@ -163,14 +195,38 @@ export default async function SeoDynamicPage({
     { name: `в ${cityDeclined.prepositional}`, href: `${baseUrl}/zaimy/${type}/v-${city}` },
   ];
 
-  // Получаем офферы для этой страницы
-  const offers = await getRelevantOffers(pageData.amountValue);
+  // Получаем офферы для этой страницы (оптимизировано)
+  const offers = await getOffersForSeoPage(pageData.amountValue);
 
-  // Получаем соседние типы займов для перелинковки
-  const relatedTypes = await getRelatedTypes(city, type);
+  // ⚠️ DYNAMIC NOINDEX: Если офферов нет - редирект на notFound (покажется 404)
+  // Это обработано в generateMetadata, но дублируем для надёжности
+  if (offers.length === 0) {
+    notFound();
+  }
 
-  // Получаем соседние города для перелинковки
-  const relatedCities = await getRelatedCities(city, type);
+  // Получаем связанные типы займов для перелинковки (из БД, топ-10)
+  const relatedTypesData = await getRelatedLoanTypes(city, type, 10);
+  const relatedTypes = relatedTypesData.map((t) => ({
+    name: t.loanType || '',
+    slug: t.loanTypeSlug || '',
+    offersCount: t.offersCount,
+    priority: t.priority,
+  }));
+
+  // Получаем связанные города для перелинковки (из БД, топ-10)
+  const relatedCitiesData = await getRelatedCities(city, type, 10);
+  const relatedCities = relatedCitiesData.map((c) => ({
+    name: c.city || '',
+    slug: c.citySlug || '',
+    offersCount: c.offersCount,
+    priority: c.priority,
+  }));
+
+  // Получаем соседние типы займов для SeoPageContent
+  const relatedTypesForContent = await getRelatedLoanTypes(city, type, 6);
+
+  // Получаем соседние города для SeoPageContent
+  const relatedCitiesForContent = await getRelatedCities(city, type, 6);
 
   // Обновляем счётчик просмотров (асинхронно, не блокируя)
   incrementViews(pageData.id).catch(console.error);
@@ -200,8 +256,8 @@ export default async function SeoDynamicPage({
       <SeoPageContent
         pageData={pageData}
         offers={offers}
-        relatedTypes={relatedTypes}
-        relatedCities={relatedCities}
+        relatedTypes={relatedTypesForContent}
+        relatedCities={relatedCitiesForContent}
       />
 
       {/* SEO-текст со склонениями */}
@@ -211,6 +267,27 @@ export default async function SeoDynamicPage({
           city={pageData.city}
         />
       </div>
+
+      {/* ⚡ CROSS-LINKING: Динамическая перелинковка из БД */}
+      {relatedTypes.length > 0 && (
+        <CrossLinking
+          type="types"
+          activeSlug={type}
+          items={relatedTypes}
+          baseUrl={`/zaimy`}
+          showCount={true}
+        />
+      )}
+
+      {relatedCities.length > 0 && (
+        <CrossLinking
+          type="cities"
+          activeSlug={city}
+          items={relatedCities}
+          baseUrl={`/zaimy/${type}`}
+          showCount={true}
+        />
+      )}
     </>
   );
 }

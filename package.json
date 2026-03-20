@@ -19,7 +19,8 @@
     "import:seo": "node scripts/import-seo-pages.cjs",
     "import:seo:test": "node scripts/import-seo-pages.cjs --test",
     "seed:seo": "npx tsx scripts/seed-seo.ts",
-    "seed:seo:dry": "npx tsx scripts/seed-seo.ts --dry-run"
+    "seed:seo:dry": "npx tsx scripts/seed-seo.ts --dry-run",
+    "ping:sitemap": "node scripts/sitemap-ping.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
