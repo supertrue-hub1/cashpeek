@@ -20,7 +20,8 @@ const DEFAULT_BASE_URL = 'https://api-metrika.yandex.ru/stat/v1'
 
 const config: MetricaConfig = {
   token: process.env.METRICA_TOKEN || '',
-  counterId: process.env.NEXT_PUBLIC_YM_ID || '',
+  // Используем YM_ID (без NEXT_PUBLIC_) чтобы не требовалась пересборка
+  counterId: process.env.YM_ID || process.env.NEXT_PUBLIC_YM_ID || '107712908',
   baseUrl: DEFAULT_BASE_URL,
 }
 
