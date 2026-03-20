@@ -135,7 +135,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru https://api.sypexgeo.net",
+      "connect-src 'self' https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru wss://mc.yandex.ru https://api.sypexgeo.net",
       "frame-src 'self' https://yandex.ru",
       "object-src 'none'",
       "base-uri 'self'",
