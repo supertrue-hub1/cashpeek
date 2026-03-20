@@ -131,11 +131,11 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru https://yastatic.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru wss://mc.yandex.ru https://api.sypexgeo.net",
+      "connect-src 'self' https://www.google-analytics.com https://mc.yandex.ru https://yandex.ru wss://mc.yandex.ru https://api.sypexgeo.net https://yastatic.net",
       "frame-src 'self' https://yandex.ru",
       "object-src 'none'",
       "base-uri 'self'",
