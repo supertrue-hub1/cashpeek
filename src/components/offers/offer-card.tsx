@@ -305,27 +305,20 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
         </CardContent>
 
         <CardFooter className="p-4 pt-0 gap-2">
-          {/* Кнопка "Получить" скрыта - для отладки/восстановления раскомментировать */}
-          {/* 
           <Button
-            asChild
             className="flex-1 h-8"
             size="sm"
+            onClick={() => {
+              window.open(offer.affiliateUrl, '_blank');
+              handleClickMfo('card');
+            }}
           >
-            <a 
-              href={offer.affiliateUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={() => handleClickMfo('card')}
-            >
-              Получить
-            </a>
+            Получить
           </Button>
-          */}
           <Button
             variant="outline"
             onClick={handleOpenModal}
-            className="h-8 border-border text-muted-foreground hover:bg-accent hover:text-foreground w-full"
+            className="h-8 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
             size="sm"
           >
             Подробнее
@@ -452,16 +445,16 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 )}
               </div>
 
-              <Button asChild className="w-full hidden sm:flex" size="lg">
-                <a 
-                  href={offer.affiliateUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  onClick={() => handleClickMfo('modal_info')}
-                >
-                  Получить займ
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Button 
+                className="w-full hidden sm:flex" 
+                size="lg"
+                onClick={() => {
+                  window.open(offer.affiliateUrl, '_blank');
+                  handleClickMfo('modal_info');
+                }}
+              >
+                Получить займ
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </TabsContent>
 
@@ -512,16 +505,16 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                 </div>
               </div>
 
-              <Button asChild className="w-full hidden sm:flex" size="lg">
-                <a 
-                  href={offer.affiliateUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  onClick={() => handleClickMfo('modal_terms')}
-                >
-                  Получить займ
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Button 
+                className="w-full hidden sm:flex" 
+                size="lg"
+                onClick={() => {
+                  window.open(offer.affiliateUrl, '_blank');
+                  handleClickMfo('modal_terms');
+                }}
+              >
+                Получить займ
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </TabsContent>
 
