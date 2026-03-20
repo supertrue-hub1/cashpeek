@@ -8,8 +8,9 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const token = process.env.METRICA_TOKEN
-  const counterId = process.env.NEXT_PUBLIC_YM_ID
+  //HARDCODED для теста
+  const counterId = '107712908';
+  const token = process.env.METRICA_TOKEN;
 
   // Проверка наличия переменных
   if (!token) {
@@ -53,11 +54,7 @@ export async function GET() {
     return NextResponse.json({
       success: response.ok,
       status: response.status,
-      hasToken: true,
-      tokenLength: token.length,
-      tokenPreview: token.substring(0, 15) + '...',
-      counterId,
-      requestUrl: url,
+      counterId: counterId,
       response: responseData,
     })
   } catch (error) {
