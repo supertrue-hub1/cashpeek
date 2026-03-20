@@ -1,0 +1,42 @@
+{
+  "name": "CashPeek — Займы онлайн",
+  "short_name": "CashPeek",
+  "description": "Сравните условия проверенных МФО. Займы онлайн под 0% для новых клиентов.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["finance", "business"],
+  "shortcuts": [
+    {
+      "name": "Сравнить займы",
+      "short_name": "Сравнить",
+      "url": "/sravnit"
+    },
+    {
+      "name": "Все МФО",
+      "short_name": "МФО",
+      "url": "/mfo"
+    },
+    {
+      "name": "Блог",
+      "short_name": "Блог",
+      "url": "/blog"
+    }
+  ]
+}
