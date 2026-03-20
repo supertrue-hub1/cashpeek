@@ -122,6 +122,9 @@ export function SEOLoanPage({
       {/* Content Before */}
       {contentBefore}
 
+      {/* Container for offers - same as main page */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+
       {/* Calculator Card */}
       <div 
         className="mx-auto bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10 px-4 sm:px-8 py-6"
@@ -267,7 +270,8 @@ export function SEOLoanPage({
       </div>
 
       {/* Sorting */}
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="text-sm text-muted-foreground mr-2">Сортировка:</span>
         {[
           { value: 'rating' as const, label: 'По рейтингу', icon: Star },
@@ -289,10 +293,12 @@ export function SEOLoanPage({
             {label}
           </button>
         ))}
+        </div>
       </div>
 
       {/* Offers Grid */}
-      <div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="text-center mb-6">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-foreground mb-2">
             {sortedOffers.length} {sortedOffers.length === 1 ? 'предложение' : sortedOffers.length < 5 ? 'предложения' : 'предложений'}
@@ -336,6 +342,7 @@ export function SEOLoanPage({
             </Button>
           </Card>
         )}
+      </div>
       </div>
 
       {/* Features */}
