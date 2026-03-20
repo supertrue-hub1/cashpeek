@@ -16,6 +16,7 @@ import {
   BarChart3,
 } from "lucide-react"
 import { MetricaStats } from "@/components/admin/metrica-stats"
+import { GA4Stats } from "@/components/admin/ga4-stats"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -277,6 +278,10 @@ export default function AnalyticsPage() {
             <BarChart3 className="mr-2 h-4 w-4" />
             Метрика
           </TabsTrigger>
+          <TabsTrigger value="ga4">
+            <LineChart className="mr-2 h-4 w-4" />
+            GA4
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -497,6 +502,10 @@ export default function AnalyticsPage() {
 
         <TabsContent value="metrica" className="space-y-4">
           <MetricaStats />
+        </TabsContent>
+
+        <TabsContent value="ga4" className="space-y-4">
+          <GA4Stats />
         </TabsContent>
       </Tabs>
     </div>
