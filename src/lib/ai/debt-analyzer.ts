@@ -1,9 +1,7 @@
 /**
  * AI Debt Analysis Utilities
- * Использует z-ai-web-dev-sdk для AI-анализа
+ * Локальный AI-анализ (без внешних SDK)
  */
-
-import ZAI from 'z-ai-web-dev-sdk';
 
 // Типы для анализа долгов
 export interface DebtInput {
@@ -75,15 +73,11 @@ export interface CreditHealthScore {
   recommendations: string[];
 }
 
-// Инициализация AI клиента
+// Инициализация AI клиента (заглушка - используем локальный расчёт)
+// В будущем можно подключить реальный AI
 async function getAIClient() {
-  try {
-    const zai = await ZAI.create();
-    return zai;
-  } catch (error) {
-    console.error('[AI] Failed to initialize ZAI client:', error);
-    return null;
-  }
+  // Пока используем только локальный расчёт
+  return null;
 }
 
 // Парсинг JSON из ответа AI

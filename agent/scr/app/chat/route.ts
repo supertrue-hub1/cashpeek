@@ -1,6 +1,10 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
+
+// AI SDK заглушка (временно отключено)
+const ZAI = {
+  create: async () => null
+}
 
 // Дефолтный системный промпт (если настройки не загружены)
 const DEFAULT_SYSTEM_PROMPT = `Ты — профессиональный ИИ-ассистент сервиса по подбору микрозаймов (МФО). Твоя цель — быстро и четко помочь пользователю подобрать идеальный займ из нашей базы данных.
@@ -154,14 +158,12 @@ function extractSearchParams(message: string): { amount?: number; term?: number 
   return result
 }
 
-// Глобальный экземпляр ZAI
-let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null
+// Глобальный экземпляр ZAI (заглушка)
+let zaiInstance: any = null
 
 async function getZAI() {
-  if (!zaiInstance) {
-    zaiInstance = await ZAI.create()
-  }
-  return zaiInstance
+  // AI временно отключён - возвращаем null
+  return null
 }
 
 export async function POST(request: NextRequest) {
@@ -211,6 +213,30 @@ export async function POST(request: NextRequest) {
       contextMessage = `${message}\n\nНАЙДЕННЫЕ ЗАЙМЫ В БАЗЕ ДАННЫХ:\n${loansContext}\n\nИспользуй эти данные для ответа пользователю. Отметь, что это реальные предложения из базы.`
     } else if (searchParams.amount || searchParams.term) {
       contextMessage = `${message}\n\nВНИМАНИЕ: В базе данных нет подходящих займов с такими параметрами. Сообщи пользователю об этом и предложи изменить параметры поиска.`
+    }
+
+    // Если AI недоступен - возвращаем базовый ответ с найденными займами
+    if (!zai) {
+      let response = ''
+      if (loans.length > 0) {
+        response = `Подобрал для вас ${loans.length} варианта:\n\n`
+        loans.forEach((loan, i) => {
+          response += `${i + 1}. **${loan.mfoName} - ${loan.name}**: сумма ${loan.minAmount}-${loan.maxAmount}₽, срок ${loan.minTerm}-${loan.maxTerm} дней, ставка ${loan.dailyRate}% в день`
+          if (loan.firstLoanFree) response += ', первый займ без процентов'
+          response += '\n'
+        })
+      } else if (searchParams.amount || searchParams.term) {
+        response = `К сожалению, не нашлось займов с указанными параметрами. Попробуйте изменить сумму или срок.`
+      } else {
+        response = `Здравствуйте! Я помогу подобрать займ. Укажите сумму и срок, которые вас интересуют.`
+      }
+
+      return NextResponse.json({
+        success: true,
+        response,
+        searchParams,
+        loansFound: loans.length,
+      })
     }
 
     // Формируем историю сообщений
