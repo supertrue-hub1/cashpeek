@@ -122,12 +122,9 @@ export function SEOLoanPage({
       {/* Content Before */}
       {contentBefore}
 
-      {/* Container for offers - same as main page */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-
       {/* Calculator Card */}
       <div 
-        className="mx-auto bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10 px-4 sm:px-8 py-6"
+        className="mx-auto bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10 px-4 sm:px-8 py-6 container mx-auto px-4 sm:px-6 lg:px-8"
         style={{ maxWidth: '1220px' }}
       >
         <div className="grid lg:grid-cols-[1fr_320px] gap-6">
