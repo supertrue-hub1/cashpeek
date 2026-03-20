@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Offer } from '@/types/offer';
+import { trackEvent } from '@/components/analytics/google-analytics';
 
 type SortType = 'min_overpayment' | 'max_amount' | 'quick_approval' | 'rating';
 
@@ -88,8 +89,43 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
   // Best offer for CTA
   const bestOffer = sortedOffers[0];
 
+  // GA4 Tracking
+  const handleAmountChange = (values: number[]) => {
+    const newAmount = values[0]
+    if (newAmount) {
+      setAmount(newAmount)
+      trackEvent('calculator_amount_change', { amount: newAmount })
+    }
+  }
+
+  const handleTermChange = (values: number[]) => {
+    const newTerm = values[0]
+    if (newTerm) {
+      setTerm(newTerm)
+      trackEvent('calculator_term_change', { term: newTerm })
+    }
+  }
+
+  const handleSortChange = (newSort: SortType) => {
+    setSortBy(newSort)
+    trackEvent('calculator_sort_change', { sort_type: newSort })
+  }
+
+  const handleGetMoney = () => {
+    if (bestOffer) {
+      trackEvent('click_mfo_button', {
+        offer_id: bestOffer.id,
+        offer_name: bestOffer.name,
+        source: 'calculator_cta',
+        amount: amount,
+        term: term,
+      })
+    }
+  }
+
   const handleShowMore = () => {
-    setLimit(prev => prev + 21);
+    setLimit(prev => prev + 21)
+    trackEvent('calculator_show_more', { current_limit: limit + 21 })
   };
 
   return (
@@ -131,7 +167,7 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
                 </div>
                 <Slider
                   value={[amount]}
-                  onValueChange={(values) => values[0] && setAmount(values[0])}
+                  onValueChange={handleAmountChange}
                   min={1000}
                   max={100000}
                   step={1000}
@@ -159,7 +195,7 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
                 </div>
                 <Slider
                   value={[term]}
-                  onValueChange={(values) => values[0] && setTerm(values[0])}
+                  onValueChange={handleTermChange}
                   min={1}
                   max={30}
                   step={1}
@@ -221,7 +257,12 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
                   className="w-full gap-2"
                   size="lg"
                 >
-                  <a href={bestOffer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                  <a 
+                    href={bestOffer.affiliateUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={handleGetMoney}
+                  >
                     Получить деньги
                     <ArrowRight className="h-4 w-4" />
                   </a>
@@ -247,7 +288,7 @@ export function LoanCalculator({ offers: initialOffers }: LoanCalculatorProps) {
         ].map(({ value, label, icon: Icon }) => (
           <button
             key={value}
-            onClick={() => setSortBy(value)}
+            onClick={() => handleSortChange(value)}
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all',
               sortBy === value

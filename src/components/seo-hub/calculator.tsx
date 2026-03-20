@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/components/analytics/google-analytics';
 
 interface CalculatorProps {
   defaultAmount?: number;
@@ -24,6 +25,17 @@ export function CalculatorComponent({
 }: CalculatorProps) {
   const [amount, setAmount] = useState(defaultAmount);
   const [term, setTerm] = useState(defaultTerm);
+  
+  // GA4 Tracking
+  const handleAmountChange = ([v]: number[]) => {
+    setAmount(v)
+    trackEvent('calculator_amount_change', { amount: v, calculator: 'seo_hub' })
+  }
+  
+  const handleTermChange = ([v]: number[]) => {
+    setTerm(v)
+    trackEvent('calculator_term_change', { term: v, calculator: 'seo_hub' })
+  }
   
   // Расчёт переплаты
   const result = useMemo(() => {
@@ -67,7 +79,7 @@ export function CalculatorComponent({
             </div>
             <Slider
               value={[amount]}
-              onValueChange={([v]) => setAmount(v)}
+              onValueChange={handleAmountChange}
               min={minAmount}
               max={maxAmount}
               step={1000}
@@ -91,7 +103,7 @@ export function CalculatorComponent({
             </div>
             <Slider
               value={[term]}
-              onValueChange={([v]) => setTerm(v)}
+              onValueChange={handleTermChange}
               min={1}
               max={30}
               step={1}

@@ -29,6 +29,7 @@ import {
 } from '@/lib/utils/calculator';
 
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/components/analytics/google-analytics';
 
 interface LoanOffer {
   /** ID оффера */
@@ -166,6 +167,7 @@ export function InteractiveCalculator({
     setAmount(clamped);
     setManualAmount(clamped.toString());
     updateUrl(clamped, term, isNewClient);
+    trackEvent('calculator_amount_change', { amount: clamped, calculator: 'interactive' });
   };
 
   const handleManualAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,6 +177,7 @@ export function InteractiveCalculator({
     if (!isNaN(value) && value >= offer.minAmount && value <= offer.maxAmount) {
       setAmount(value);
       updateUrl(value, term, isNewClient);
+      trackEvent('calculator_amount_change', { amount: value, calculator: 'interactive' });
     }
   };
 
@@ -182,12 +185,14 @@ export function InteractiveCalculator({
     const clamped = clamp(value, offer.minTerm, offer.maxTerm);
     setTerm(clamped);
     updateUrl(amount, clamped, isNewClient);
+    trackEvent('calculator_term_change', { term: clamped, calculator: 'interactive' });
   };
 
   const handleClientTypeChange = (value: string) => {
     const newIsNewClient = value === 'new';
     setIsNewClient(newIsNewClient);
     updateUrl(amount, term, newIsNewClient);
+    trackEvent('calculator_client_type_change', { is_new_client: newIsNewClient });
   };
 
   const handlePresetAmountClick = (preset: number) => {
@@ -203,6 +208,16 @@ export function InteractiveCalculator({
   // ============================================
 
   const handleGetLoan = () => {
+    // GA4 Tracking
+    trackEvent('click_mfo_button', {
+      offer_id: offer.id,
+      offer_name: offer.name,
+      source: 'interactive_calculator',
+      amount: amount,
+      term: term,
+      is_new_client: isNewClient,
+    })
+    
     // Формируем URL с параметрами для МФО
     const params = new URLSearchParams();
     params.set('amount', amount.toString());

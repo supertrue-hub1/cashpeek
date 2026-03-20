@@ -19,6 +19,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { Offer, OfferFeature, Review } from '@/types/offer';
 import { getReviewsByOfferId } from '@/data/mock-offers';
+import { trackEvent } from '@/components/analytics/google-analytics';
 
 interface OfferCardProps {
   offer: Offer;
@@ -139,6 +140,29 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
     if (minutes < 60) return `${minutes} мин`;
     return `${Math.floor(minutes / 60)} ч`;
   };
+
+  // GA4 Tracking functions
+  const handleClickMfo = (source: 'card' | 'modal') => {
+    trackEvent('click_mfo_button', {
+      offer_id: offer.id,
+      offer_name: offer.name,
+      source: source,
+      amount_max: offer.maxAmount,
+      rating: offer.rating,
+    })
+  }
+
+  const handleOpenModal = () => {
+    trackEvent('view_offer_details', {
+      offer_id: offer.id,
+      offer_name: offer.name,
+    })
+    setModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setModalOpen(false)
+  }
 
   // Безопасное получение массивов
   const documents = Array.isArray(offer.documents) ? offer.documents : ['passport'];
@@ -286,13 +310,18 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             className="flex-1 h-8"
             size="sm"
           >
-            <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+            <a 
+              href={offer.affiliateUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={() => handleClickMfo('card')}
+            >
               Получить
             </a>
           </Button>
           <Button
             variant="outline"
-            onClick={() => setModalOpen(true)}
+            onClick={handleOpenModal}
             className="h-8 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
             size="sm"
           >
@@ -321,7 +350,12 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
           {/* Sticky CTA button for mobile */}
           <div className="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background border-b border-border sm:hidden">
             <Button asChild className="w-full" size="lg">
-              <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+              <a 
+                href={offer.affiliateUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={() => handleClickMfo('modal_sticky')}
+              >
                 Получить займ
                 <ArrowRight className="ml-2 h-4 w-4" />
               </a>
@@ -414,7 +448,12 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               </div>
 
               <Button asChild className="w-full hidden sm:flex" size="lg">
-                <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                <a 
+                  href={offer.affiliateUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  onClick={() => handleClickMfo('modal_info')}
+                >
                   Получить займ
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
@@ -469,7 +508,12 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               </div>
 
               <Button asChild className="w-full hidden sm:flex" size="lg">
-                <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                <a 
+                  href={offer.affiliateUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  onClick={() => handleClickMfo('modal_terms')}
+                >
                   Получить займ
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
