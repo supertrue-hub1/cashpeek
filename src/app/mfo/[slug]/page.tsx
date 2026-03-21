@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import * as React from 'react';
 import { Header, Footer } from '@/components/layout';
 import { db } from '@/lib/db';
 import { generateBreadcrumb } from '@/lib/seo/metadata';
@@ -10,13 +9,11 @@ import { createFinancialProductSchema } from '@/lib/seo/schemas/product';
 import { createFAQSchema } from '@/lib/seo/schemas/faq';
 import { getMfoTemplates } from '@/lib/seo/utils/text-templates';
 import { generateMfoKeywords } from '@/lib/seo/utils/keywords';
-import { generateFakeReviews, generateReviewStats } from '@/lib/utils/fake-reviews';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, CreditCard, Clock, Star, ExternalLink, Phone, Mail, Shield, Zap, Users, Loader2, ThumbsUp, MessageSquare } from 'lucide-react';
+import { ChevronRight, CreditCard, Clock, Star, ExternalLink, Phone, Mail, Shield, Zap, Users, Loader2 } from 'lucide-react';
 import { InteractiveCalculator } from '@/components/calculator/interactive-calculator';
-import { ReviewList } from '@/components/reviews';
-import type { Review } from '@/types/offer';
+import { MfoReviewsSection } from '@/components/mfo/mfo-reviews-section';
 import Link from 'next/link';
 
 // ISR: обновление каждую минуту
@@ -121,85 +118,6 @@ function getMfoFaq(mfoName: string) {
   ];
 }
   
-// Клиентский компонент секции отзывов
-function MfoReviewsSection({ 
-  mfoId, 
-  mfoName, 
-  mfoRating 
-}: { 
-  mfoId: string; 
-  mfoName: string; 
-  mfoRating: number;
-}) {
-  'use client';
-  
-  const [reviews, setReviews] = React.useState<Review[]>([]);
-  const [stats, setStats] = React.useState({ average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }});
-  
-  React.useEffect(() => {
-    // Генерируем отзывы только на клиенте
-    const fakeReviews = generateFakeReviews(mfoId, mfoName, 1, 30);
-    setReviews(fakeReviews);
-    setStats(generateReviewStats(fakeReviews));
-  }, [mfoId, mfoName]);
-  
-  return (
-    <div className="bg-muted rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Отзывы клиентов
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Реальные отзывы заёмщиков о {mfoName}
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="flex items-center gap-1 justify-end">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-            <span className="text-2xl font-bold text-foreground">{stats.average || mfoRating}</span>
-          </div>
-          <p className="text-sm text-muted-foreground">{stats.total} отзывов</p>
-        </div>
-      </div>
-      
-      {/* Rating distribution */}
-      {stats.total > 0 && (
-        <div className="mb-6 space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => {
-            const count = stats.distribution[rating as keyof typeof stats.distribution];
-            const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
-            
-            return (
-              <div key={rating} className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground w-8">{rating} ★</span>
-                <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-yellow-400 rounded-full transition-all duration-300"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-                <span className="text-sm text-muted-foreground w-8">{count}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Reviews list */}
-      <ReviewList
-        mfoId={mfoId}
-        mfoName={mfoName}
-        serverReviews={reviews}
-        showForm={true}
-        showCount={false}
-        maxItems={10}
-      />
-    </div>
-  );
-}
-
 export default async function MfoPage({ 
   params 
 }: { 
