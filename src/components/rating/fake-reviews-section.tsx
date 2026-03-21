@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ReviewList } from '@/components/reviews';
-import { generateFakeReviews } from '@/lib/utils/fake-reviews';
+import { generateFakeReviews, getDeterministicReviewsCount } from '@/lib/utils/fake-reviews';
 import { cn } from '@/lib/utils';
 import type { Review } from '@/types/offer';
 import { format } from 'date-fns';
@@ -39,9 +39,10 @@ export function FakeReviewsSection({ showAll = false, mfoList = DEFAULT_MFOS }: 
   React.useEffect(() => {
     const allReviews: Review[] = [];
     
-    // Генерируем по 3-8 отзывов для каждого МФО
+    // Генерируем отзывы для каждого МФО (детерминированное количество)
     mfoList.forEach((mfo) => {
-      const mfoReviews = generateFakeReviews(mfo.id, mfo.name, 3, 8);
+      const count = getDeterministicReviewsCount(mfo.id, 5, 50);
+      const mfoReviews = generateFakeReviews(mfo.id, mfo.name, count, count);
       allReviews.push(...mfoReviews);
     });
     

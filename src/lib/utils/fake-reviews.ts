@@ -65,37 +65,68 @@ const LOAN_AMOUNTS = [3000, 5000, 7000, 10000, 15000, 20000, 25000, 30000];
 // Сроки займов
 const LOAN_TERMS = [5, 7, 10, 14, 15, 21, 30];
 
+/**
+ * Простой хэш строки для детерминированной генерации
+ */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Детерминированный генератор случайных чисел на основе seed
+ */
+function seededRandom(seed: number): () => number {
+  return function() {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+/**
+ * Детерминированное количество отзывов на основе ID МФО
+ */
+export function getDeterministicReviewsCount(mfoId: string, min: number = 5, max: number = 50): number {
+  const hash = hashString(mfoId);
+  return min + (hash % (max - min + 1));
+}
+
 // Генерация случайного элемента массива
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function randomItem<T>(arr: T[], random: () => number): T {
+  return arr[Math.floor(random() * arr.length)];
 }
 
 // Генерация случайного числа в диапазоне
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function randomInt(min: number, max: number, random: () => number): number {
+  return Math.floor(random() * (max - min + 1)) + min;
 }
 
 // Генерация случайной даты за последние 90 дней
-function randomDate(): string {
+function randomDate(random: () => number): string {
   const now = new Date();
-  const daysAgo = randomInt(1, 90);
+  const daysAgo = randomInt(1, 90, random);
   const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
   return date.toISOString();
 }
 
 // Генерация текста отзыва
-function generateReviewText(mfoName: string): string {
-  const templates = Math.random() > 0.3 
+function generateReviewText(mfoName: string, random: () => number): string {
+  const templates = random() > 0.3 
     ? [...POSITIVE_TEMPLATES, ...DETAILED_TEMPLATES]
     : NEUTRAL_TEMPLATES;
   
-  let text = randomItem(templates);
+  let text = randomItem(templates, random);
   
   // Замена плейсхолдеров
-  const time = randomItem(DECISION_TIMES);
-  const amount = randomItem(LOAN_AMOUNTS);
-  const term = randomItem(LOAN_TERMS);
-  const count = randomInt(2, 10);
+  const time = randomItem(DECISION_TIMES, random);
+  const amount = randomItem(LOAN_AMOUNTS, random);
+  const term = randomItem(LOAN_TERMS, random);
+  const count = randomInt(2, 10, random);
   const overpay = Math.round(amount * 0.01 * term); // Примерная переплата
   
   text = text.replace('{time}', String(time));
@@ -109,27 +140,27 @@ function generateReviewText(mfoName: string): string {
 }
 
 // Генерация имени автора
-function generateAuthorName(): string {
-  const firstName = randomItem(FIRST_NAMES);
-  const showLastName = Math.random() > 0.5;
+function generateAuthorName(random: () => number): string {
+  const firstName = randomItem(FIRST_NAMES, random);
+  const showLastName = random() > 0.5;
   
   if (showLastName) {
-    const lastName = randomItem(LAST_NAMES);
+    const lastName = randomItem(LAST_NAMES, random);
     return `${firstName} ${lastName.charAt(0)}.`;
   }
   
-  return `${firstName} ${String.fromCharCode(65 + randomInt(0, 25))}.`;
+  return `${firstName} ${String.fromCharCode(65 + Math.floor(random() * 26))}.`;
 }
 
 // Генерация рейтинга (взвешенный - больше высоких оценок)
-function generateRating(): number {
+function generateRating(random: () => number): number {
   const weights = [0.05, 0.1, 0.15, 0.25, 0.45]; // 1-5 звёзд
-  const random = Math.random();
+  const r = random();
   let cumulative = 0;
   
   for (let i = 0; i < weights.length; i++) {
     cumulative += weights[i];
-    if (random < cumulative) {
+    if (r < cumulative) {
       return i + 1;
     }
   }
@@ -139,6 +170,7 @@ function generateRating(): number {
 
 /**
  * Генерирует массив фейковых отзывов для МФО
+ * Детерминированный вариант - одинаковые отзывы для одного MFO ID
  * 
  * @param mfoId - ID МФО
  * @param mfoName - Название МФО
@@ -152,21 +184,25 @@ export function generateFakeReviews(
   minCount: number = 1,
   maxCount: number = 30
 ): Review[] {
-  const count = randomInt(minCount, maxCount);
+  // Детерминированный seed на основе ID
+  const seed = hashString(mfoId);
+  const random = seededRandom(seed);
+  
+  const count = minCount + Math.floor(random() * (maxCount - minCount + 1));
   const reviews: Review[] = [];
   
   for (let i = 0; i < count; i++) {
-    const rating = generateRating();
-    const helpful = rating >= 4 ? randomInt(5, 50) : randomInt(1, 15);
+    const rating = generateRating(random);
+    const helpful = rating >= 4 ? randomInt(5, 50, random) : randomInt(1, 15, random);
     
     reviews.push({
-      id: uuidv4(),
+      id: `${mfoId}-review-${i}`,
       offerId: mfoId,
-      author: generateAuthorName(),
+      author: generateAuthorName(random),
       rating,
-      date: randomDate(),
-      text: generateReviewText(mfoName),
-      verified: Math.random() > 0.3, // 70% проверенных
+      date: randomDate(random),
+      text: generateReviewText(mfoName, random),
+      verified: random() > 0.3, // 70% проверенных
       helpful,
       source: 'server', // Помечаем как серверные (для SEO)
       likedBy: [],
