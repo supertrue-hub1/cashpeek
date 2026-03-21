@@ -6,7 +6,6 @@ import {
   HeroRating,
   RatingTable,
   HowItWorks,
-  FakeReviewsSection,
 } from '@/components/rating';
 import type { MfoRating } from '@/lib/store/use-rating-store';
 import { getDeterministicReviewsCount } from '@/lib/utils/fake-reviews';
@@ -112,9 +111,6 @@ export default async function RatingPage() {
 
         {/* How It Works */}
         <HowItWorks />
-
-        {/* Reviews Section */}
-        <FakeReviewsSection showAll mfoList={mfoList} />
       </main>
 
       <Footer />
