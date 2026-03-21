@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquarePlus, ThumbsUp, ChevronLeft, ChevronRight, Quote, User } from 'lucide-react';
+import { MessageSquarePlus, ThumbsUp, ChevronLeft, ChevronRight, Quote, User, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -15,6 +15,7 @@ import {
 import { StarRating } from './star-rating';
 import { ReviewFormDialog } from './review-form-dialog';
 import { useRatingStore, type Review } from '@/lib/store/use-rating-store';
+import { generateFakeReviews as genFakeReviews } from '@/lib/utils/fake-reviews';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';

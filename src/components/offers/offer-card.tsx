@@ -18,10 +18,10 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { Offer, OfferFeature, Review } from '@/types/offer';
-import { getReviewsByOfferId } from '@/data/mock-offers';
 import { trackEvent } from '@/components/analytics/google-analytics';
 import { ReviewList } from '@/components/reviews';
 import { useReviews, useReviewHydrated } from '@/lib/store/use-review-store';
+import { generateFakeReviews } from '@/lib/utils/fake-reviews';
 
 interface OfferCardProps {
   offer: Offer;
@@ -99,19 +99,21 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
   const [modalOpen, setModalOpen] = React.useState(false);
   const hydrated = useReviewHydrated();
   
-  // Серверные отзывы (из mock данных)
-  const serverReviews = getReviewsByOfferId(offer.id);
-  
   // Локальные отзывы (из Zustand)
   const { reviews: localReviews } = useReviews(offer.id);
   
+  // Генерируем фейковые отзывы (1-30 штук)
+  const fakeReviews = React.useMemo(() => {
+    return generateFakeReviews(offer.id, offer.name, 1, 30);
+  }, [offer.id, offer.name]);
+  
   // Объединяем отзывы: локальные первыми
   const allReviews = React.useMemo(() => {
-    if (!hydrated) return serverReviews;
+    if (!hydrated) return fakeReviews;
     const localIds = new Set(localReviews.map((r) => r.id));
-    const uniqueServer = serverReviews.filter((r) => !localIds.has(r.id));
-    return [...localReviews, ...uniqueServer];
-  }, [hydrated, localReviews, serverReviews]);
+    const uniqueFake = fakeReviews.filter((r) => !localIds.has(r.id));
+    return [...localReviews, ...uniqueFake];
+  }, [hydrated, localReviews, fakeReviews]);
   
   const avgRating = allReviews.length > 0 
     ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
@@ -472,7 +474,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               <ReviewList
                 mfoId={offer.id}
                 mfoName={offer.name}
-                serverReviews={serverReviews}
+                serverReviews={fakeReviews}
                 showForm={true}
                 showCount={true}
               />

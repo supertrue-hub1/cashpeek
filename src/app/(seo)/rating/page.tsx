@@ -6,7 +6,7 @@ import {
   HeroRating,
   RatingTable,
   HowItWorks,
-  ReviewsSection,
+  FakeReviewsSection,
 } from '@/components/rating';
 import type { MfoRating } from '@/lib/store/use-rating-store';
 
@@ -113,7 +113,7 @@ export default async function RatingPage() {
         <HowItWorks />
 
         {/* Reviews Section */}
-        <ReviewsSection showAll />
+        <FakeReviewsSection showAll mfoList={mfoList} />
       </main>
 
       <Footer />
