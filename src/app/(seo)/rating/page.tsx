@@ -8,7 +8,6 @@ import {
   HowItWorks,
 } from '@/components/rating';
 import type { MfoRating } from '@/lib/store/use-rating-store';
-import { getDeterministicReviewsCount } from '@/lib/utils/fake-reviews';
 
 export const revalidate = 0;
 
@@ -68,7 +67,6 @@ export default async function RatingPage() {
     slug: offer.slug,
     logo: offer.logo,
     rating: offer.rating,
-    reviewsCount: getDeterministicReviewsCount(offer.id, 5, 50), // Детерминированное кол-во отзывов
     approvalRate: offer.approvalRate,
     avgDecisionTime: offer.decisionTime,
     minAmount: offer.minAmount,
@@ -78,15 +76,14 @@ export default async function RatingPage() {
     baseRate: offer.baseRate,
     firstLoanRate: offer.firstLoanRate,
     psk: offer.psk,
-    isVerified: offer.clicksCount > 100, // Заглушка: проверенные
+    isVerified: offer.clicksCount > 100,
     isPopular: offer.isFeatured,
-    peopleRating: offer.rating, // Будет обновлено из отзывов
+    peopleRating: offer.rating,
   }));
 
   // Статистика для Hero
   const stats = {
     totalMfo: offers.length,
-    totalReviews: mfoList.reduce((sum, mfo) => sum + mfo.reviewsCount, 0),
     avgRating: offers.length > 0
       ? offers.reduce((sum, o) => sum + o.rating, 0) / offers.length
       : 0,
@@ -101,7 +98,6 @@ export default async function RatingPage() {
         {/* Hero Section */}
         <HeroRating
           totalMfo={stats.totalMfo}
-          totalReviews={stats.totalReviews}
           avgRating={stats.avgRating}
           verifiedMfo={stats.verifiedMfo}
         />

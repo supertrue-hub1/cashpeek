@@ -2,14 +2,12 @@ import { Trophy, Users, Star, TrendingUp } from 'lucide-react';
 
 interface HeroRatingProps {
   totalMfo: number;
-  totalReviews: number;
   avgRating: number;
   verifiedMfo: number;
 }
 
 export function HeroRating({
   totalMfo,
-  totalReviews,
   avgRating,
   verifiedMfo,
 }: HeroRatingProps) {
@@ -47,18 +45,12 @@ export function HeroRating({
           </p>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <StatCard
               icon={<Users className="h-5 w-5" />}
               value={totalMfo.toString()}
               label="МФО в рейтинге"
               color="blue"
-            />
-            <StatCard
-              icon={<Star className="h-5 w-5" />}
-              value={totalReviews.toString()}
-              label="Отзывов"
-              color="yellow"
             />
             <StatCard
               icon={<TrendingUp className="h-5 w-5" />}
