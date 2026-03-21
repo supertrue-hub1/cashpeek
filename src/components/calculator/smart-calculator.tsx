@@ -135,8 +135,9 @@ export function SmartCalculator() {
       
       if (data.success) {
         setResponse(data);
-        // Если результатов нет
-        if (data.data?.results?.length === 0) {
+        console.log('[Calculator] Results:', data.data?.results?.length);
+        // Ошибка только если результатов действительно нет
+        if (!data.data?.results || data.data.results.length === 0) {
           setError('Нет доступных предложений. Попробуйте изменить параметры.');
         }
       } else {
@@ -150,19 +151,21 @@ export function SmartCalculator() {
     }
   }, [amount, days, purpose]);
 
-  // Initial load & show quiz
+  // Initial load
   React.useEffect(() => {
     fetchResults();
+  }, []);
+
+  // Показываем квиз через 5 секунд, если не пройден
+  React.useEffect(() => {
+    if (quizCompleted) return;
     
-    // Показываем квиз через 2 секунды, если не пройден
     const timer = setTimeout(() => {
-      if (!quizCompleted) {
-        setShowQuiz(true);
-      }
-    }, 2000);
+      setShowQuiz(true);
+    }, 5000);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [quizCompleted]);
 
   // Handlers
   const handleAmountChange = (value: number[]) => {
