@@ -135,11 +135,16 @@ export function SmartCalculator() {
       
       if (data.success) {
         setResponse(data);
+        // Если результатов нет
+        if (data.data?.results?.length === 0) {
+          setError('Нет доступных предложений. Попробуйте изменить параметры.');
+        }
       } else {
         setError(data.error || 'Ошибка при расчёте');
       }
     } catch (err) {
-      setError('Ошибка соединения');
+      console.error('[Calculator] Error:', err);
+      setError('Ошибка соединения с сервером');
     } finally {
       setIsLoading(false);
     }
@@ -419,8 +424,18 @@ export function SmartCalculator() {
         </Card>
       )}
 
+      {/* Loading state */}
+      {isLoading && !response && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <RefreshCcw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Загрузка предложений...</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Results */}
-      {response && !error && (
+      {response && !error && !isLoading && (
         <div className="space-y-6">
           {/* Financial Radar & Trust Score */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

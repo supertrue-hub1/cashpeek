@@ -305,13 +305,68 @@ export async function POST(request: NextRequest) {
       : { weights: defaultWeights };
     
     // Получаем все опубликованные офферы
-    const offers = await db.loanOffer.findMany({
-      where: { 
-        status: 'published',
-        isBroken: false,
-      },
-      orderBy: { rating: 'desc' },
-    });
+    let offers;
+    try {
+      offers = await db.loanOffer.findMany({
+        where: { 
+          status: 'published',
+          isBroken: false,
+        },
+        orderBy: { rating: 'desc' },
+      });
+    } catch (dbError) {
+      console.error('[Calculator API] Database error:', dbError);
+      return NextResponse.json({
+        success: true,
+        data: {
+          results: [],
+          trustScore: {
+            approvalChance: 70,
+            riskLevel: 'medium' as const,
+            riskColor: 'text-yellow-600',
+            recommendation: 'Сервис временно недоступен. Попробуйте позже.',
+          },
+          overpaymentIndex: 0,
+          smartTip: 'Не удалось загрузить предложения. Попробуйте обновить страницу.',
+          optimalDays: 14,
+          potentialSaving: 0,
+          purposes: PURPOSES.map(p => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            icon: p.icon,
+          })),
+        },
+      });
+    }
+    
+    console.log('[Calculator API] Found offers:', offers?.length || 0);
+    
+    // Если нет офферов - возвращаем пустой результат
+    if (offers.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          results: [],
+          trustScore: {
+            approvalChance: 70,
+            riskLevel: 'medium' as const,
+            riskColor: 'text-yellow-600',
+            recommendation: 'Нет доступных предложений',
+          },
+          overpaymentIndex: 0,
+          smartTip: 'Нет доступных предложений. Попробуйте позже.',
+          optimalDays: 14,
+          potentialSaving: 0,
+          purposes: PURPOSES.map(p => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            icon: p.icon,
+          })),
+        },
+      });
+    }
     
     // Рассчитываем результаты для каждого МФО
     const results: MFOResult[] = offers.map(offer => {
