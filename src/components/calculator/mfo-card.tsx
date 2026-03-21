@@ -265,6 +265,16 @@ export function MFOCard({
             </Button>
           </div>
 
+          {/* Предупреждение о недоступности */}
+          {!mfo.isAvailable && mfo.unavailableReason && (
+            <div className="mt-3 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {mfo.unavailableReason}
+              </p>
+            </div>
+          )}
+
           {/* Расширенная информация */}
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleTrigger asChild>
@@ -332,18 +342,6 @@ export function MFOCard({
               </div>
             </CollapsibleContent>
           </Collapsible>
-          
-          {/* Оверлей для недоступных */}
-          {!mfo.isAvailable && mfo.unavailableReason && (
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
-              <div className="text-center p-4">
-                <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  {mfo.unavailableReason}
-                </p>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </motion.div>

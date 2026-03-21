@@ -216,18 +216,21 @@ export function SmartCalculator() {
     }
   };
 
-  // Filtered results
+  // Filtered results - показываем все, фильтруем только по явным фильтрам
   const filteredResults = React.useMemo(() => {
     if (!response?.data.results) return [];
     
     return response.data.results.filter(mfo => {
-      if (!mfo.isAvailable) return false;
+      // Показываем все МФО, даже недоступные (они будут помечены)
       if (filters.onlyFree && !mfo.firstLoanFree) return false;
       if (filters.onlyFast && mfo.decisionTime > 10) return false;
       if (filters.onlyHighApproval && mfo.approvalChance < 85) return false;
       return true;
     });
   }, [response?.data.results, filters]);
+
+  // Количество доступных предложений
+  const availableCount = filteredResults.filter(mfo => mfo.isAvailable).length;
 
   // Selected MFOS for comparison
   const selectedMfos = React.useMemo(() => {
@@ -473,7 +476,7 @@ export function SmartCalculator() {
             <div className="bg-muted/50 rounded-xl p-4 text-center">
               <p className="text-xs text-muted-foreground mb-1">Доступных предложений</p>
               <p className="text-xl font-bold text-foreground">
-                {filteredResults.length}
+                {availableCount} из {filteredResults.length}
               </p>
             </div>
           </div>
@@ -536,7 +539,7 @@ export function SmartCalculator() {
           {/* Results Grid */}
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h3 className="text-lg font-semibold text-foreground mb-4">
-              Все предложения ({filteredResults.length})
+              Все предложения ({availableCount} из {filteredResults.length} доступны)
             </h3>
             
             {filteredResults.length > 0 ? (
