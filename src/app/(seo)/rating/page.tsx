@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import { db } from '@/lib/db';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import {
   HeroRating,
   RatingTable,
@@ -92,7 +94,10 @@ export default async function RatingPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+
+      <main className="flex-1">
         {/* Hero Section */}
         <HeroRating
           totalMfo={stats.totalMfo}
@@ -109,6 +114,9 @@ export default async function RatingPage() {
 
         {/* Reviews Section */}
         <ReviewsSection showAll />
-      </div>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

@@ -329,38 +329,26 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
 
       {/* Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center gap-4">
-              <MFOLogo name={offer.name} logo={offer.logo} className="h-16 w-16 text-xl" />
-              <div>
-                <DialogTitle className="text-xl">{offer.name}</DialogTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  <StarRating rating={Number(avgRating)} size="md" />
-                  <span className="text-sm text-muted-foreground">{avgRating} ({reviews.length} отзывов)</span>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4">
+            <DialogHeader>
+              <div className="flex items-center gap-4">
+                <MFOLogo name={offer.name} logo={offer.logo} className="h-16 w-16 text-xl" />
+                <div>
+                  <DialogTitle className="text-xl">{offer.name}</DialogTitle>
+                  <div className="flex items-center gap-2 mt-1">
+                    <StarRating rating={Number(avgRating)} size="md" />
+                    <span className="text-sm text-muted-foreground">{avgRating} ({reviews.length} отзывов)</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </DialogHeader>
-
-          {/* Sticky CTA button for mobile - скрыто */}
-          {/* 
-          <div className="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background border-b border-border sm:hidden">
-            <Button asChild className="w-full" size="lg">
-              <a 
-                href={offer.affiliateUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                onClick={() => handleClickMfo('modal_sticky')}
-              >
-                Получить займ
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
+            </DialogHeader>
           </div>
-          */}
 
-          <Tabs defaultValue="info" className="mt-4">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-6 pb-24">
+          <Tabs defaultValue="info" className="mt-0">
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="info">Информация</TabsTrigger>
               <TabsTrigger value="terms">Условия</TabsTrigger>
@@ -444,18 +432,6 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                   </div>
                 )}
               </div>
-
-              <Button 
-                className="w-full hidden sm:flex" 
-                size="lg"
-                onClick={() => {
-                  window.open(offer.affiliateUrl, '_blank');
-                  handleClickMfo('modal_info');
-                }}
-              >
-                Получить займ
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </TabsContent>
 
             <TabsContent value="terms" className="space-y-4 mt-4">
@@ -504,18 +480,6 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                   }).join(', ')}</span>
                 </div>
               </div>
-
-              <Button 
-                className="w-full hidden sm:flex" 
-                size="lg"
-                onClick={() => {
-                  window.open(offer.affiliateUrl, '_blank');
-                  handleClickMfo('modal_terms');
-                }}
-              >
-                Получить займ
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </TabsContent>
 
             <TabsContent value="reviews" className="space-y-4 mt-4">
@@ -540,6 +504,22 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
               )}
             </TabsContent>
           </Tabs>
+          </div>
+
+          {/* Sticky CTA button */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => {
+                window.open(offer.affiliateUrl, '_blank');
+                handleClickMfo('modal_sticky');
+              }}
+            >
+              Получить займ
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
