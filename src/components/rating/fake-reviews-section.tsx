@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ReviewList } from '@/components/reviews';
 import { generateFakeReviews } from '@/lib/utils/fake-reviews';
+import { cn } from '@/lib/utils';
 import type { Review } from '@/types/offer';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
