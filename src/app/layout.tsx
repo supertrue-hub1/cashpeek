@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { ReviewProvider } from "@/components/providers/review-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { ChatWidget } from "@/components/chat-widget";
 import { CookieBanner } from "@/components/shared/cookie-banner";
@@ -131,10 +132,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <ChatWidget />
-            <CookieBanner />
-            <Toaster position="top-right" richColors />
+            <ReviewProvider>
+              {children}
+              <ChatWidget />
+              <CookieBanner />
+              <Toaster position="top-right" richColors />
+            </ReviewProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

@@ -20,6 +20,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { Offer, OfferFeature, Review } from '@/types/offer';
 import { getReviewsByOfferId } from '@/data/mock-offers';
 import { trackEvent } from '@/components/analytics/google-analytics';
+import { ReviewList } from '@/components/reviews';
+import { useReviews, useReviewHydrated } from '@/lib/store/use-review-store';
 
 interface OfferCardProps {
   offer: Offer;
@@ -91,44 +93,28 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
   );
 }
 
-// Review Card component
-function ReviewCard({ review }: { review: Review }) {
-  return (
-    <div className="border-b border-border pb-4 last:border-0">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-            {review.author.charAt(0)}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-foreground text-sm">{review.author}</span>
-              {review.verified && (
-                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Проверен
-                </Badge>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground">{review.date}</span>
-          </div>
-        </div>
-        <StarRating rating={review.rating} />
-      </div>
-      <p className="text-sm text-muted-foreground mb-2">{review.text}</p>
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-        <ThumbsUp className="h-3 w-3" />
-        <span>Полезно: {review.helpful}</span>
-      </div>
-    </div>
-  );
-}
+// Review Card component - используется из @/components/reviews
 
 export function OfferCard({ offer, className, featured = false }: OfferCardProps) {
   const [modalOpen, setModalOpen] = React.useState(false);
-  const reviews = getReviewsByOfferId(offer.id);
-  const avgRating = reviews.length > 0 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+  const hydrated = useReviewHydrated();
+  
+  // Серверные отзывы (из mock данных)
+  const serverReviews = getReviewsByOfferId(offer.id);
+  
+  // Локальные отзывы (из Zustand)
+  const { reviews: localReviews } = useReviews(offer.id);
+  
+  // Объединяем отзывы: локальные первыми
+  const allReviews = React.useMemo(() => {
+    if (!hydrated) return serverReviews;
+    const localIds = new Set(localReviews.map((r) => r.id));
+    const uniqueServer = serverReviews.filter((r) => !localIds.has(r.id));
+    return [...localReviews, ...uniqueServer];
+  }, [hydrated, localReviews, serverReviews]);
+  
+  const avgRating = allReviews.length > 0 
+    ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
     : offer.rating;
 
   const formatAmount = (value: number) => {
@@ -339,7 +325,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
                   <DialogTitle className="text-xl">{offer.name}</DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
                     <StarRating rating={Number(avgRating)} size="md" />
-                    <span className="text-sm text-muted-foreground">{avgRating} ({reviews.length} отзывов)</span>
+                    <span className="text-sm text-muted-foreground">{avgRating} ({allReviews.length} отзывов)</span>
                   </div>
                 </div>
               </div>
@@ -352,7 +338,7 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="info">Информация</TabsTrigger>
               <TabsTrigger value="terms">Условия</TabsTrigger>
-              <TabsTrigger value="reviews">Отзывы ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="reviews">Отзывы ({allReviews.length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="info" className="space-y-4 mt-4">
@@ -483,25 +469,13 @@ export function OfferCard({ offer, className, featured = false }: OfferCardProps
             </TabsContent>
 
             <TabsContent value="reviews" className="space-y-4 mt-4">
-              {reviews.length > 0 ? (
-                <>
-                  <div className="flex items-center gap-2 mb-2">
-                    <StarRating rating={Number(avgRating)} size="md" />
-                    <span className="font-medium">{avgRating}</span>
-                    <span className="text-muted-foreground">на основе {reviews.length} отзывов</span>
-                  </div>
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <ReviewCard key={review.id} review={review} />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Star className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                  <p>Пока нет отзывов</p>
-                </div>
-              )}
+              <ReviewList
+                mfoId={offer.id}
+                mfoName={offer.name}
+                serverReviews={serverReviews}
+                showForm={true}
+                showCount={true}
+              />
             </TabsContent>
           </Tabs>
           </div>

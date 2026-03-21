@@ -75,6 +75,29 @@ export type DocumentRequirement =
   | 'snils' 
   | 'driver_license';
 
+// ============================================
+// Отзывы
+// ============================================
+
+export interface Review {
+  id: string;
+  offerId: string;        // ID МФО
+  author: string;          // Имя автора
+  rating: number;          // 1-5
+  date: string;            // ISO дата
+  text: string;            // Текст отзыва
+  verified?: boolean;      // Проверенный покупатель
+  helpful: number;         // Количество лайков
+  source?: 'local' | 'server'; // Источник отзыва
+  likedBy?: string[];      // ID пользователей, лайкнувших отзыв
+}
+
+export type ReviewInput = Omit<Review, 'id' | 'date' | 'helpful' | 'source' | 'likedBy'>;
+
+// ============================================
+// Сценарии
+// ============================================
+
 export interface Scenario {
   id: string;
   title: string;
